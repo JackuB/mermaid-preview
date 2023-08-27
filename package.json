@@ -1,0 +1,22 @@
+{
+  "name": "mermaid-for-slack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Create Mermaid diagrams and charts in Slack",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Jakub Mikulas",
+  "license": "MIT",
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "^10.3.1",
+    "@slack/bolt": "^3.13.3",
+    "redis": "^4.6.8"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.8",
+    "nodemon": "^3.0.1"
+  }
+}
