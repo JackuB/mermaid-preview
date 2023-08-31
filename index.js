@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const axios = require('axios');
 const { App, LogLevel } = require('@slack/bolt');
-const run = import('@mermaid-js/mermaid-cli');
+const mermaidCLI = import('@mermaid-js/mermaid-cli');
 const installationStore = require('./installationStore');
 
 const app = new App({
@@ -12,7 +12,13 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   clientId: process.env.SLACK_CLIENT_ID,
   clientSecret: process.env.SLACK_CLIENT_SECRET,
-  stateSecret: process.env.SLACK_STATE_SECRET,
+  installerOptions: {
+    // State verification sounds like something that should be enabled for OAuth, but there is a bunch of oddities and error you encounter
+    // https://github.com/slackapi/bolt-js/issues/1316
+    // https://github.com/slackapi/bolt-js/issues/1355
+    stateVerification: false,
+    directInstall: true,
+  },
   scopes: [
     'channels:history',
     'channels:join',
@@ -37,6 +43,7 @@ const app = new App({
     },
   ],
   installationStore,
+  port: process.env.PORT || 3000,
 
   // Enable the following when using socket mode
   // socketMode: true, // add this
@@ -49,11 +56,7 @@ if (!fs.existsSync(dataDir)) {
 }
 
 // TODO: something related to this app!
-const defaultMermaid = `graph LR
-  A[Square Rect] -- Link text --> B((Circle))
-  A --> C(Round Rect)
-  B --> D{Rhombus}
-  C --> D`;
+const defaultMermaid = `graph LR\n  ...`;
 
 app.command('/mermaid', async ({ client, ack, body, logger }) => {
   logger.info('mermaid command called');
@@ -111,7 +114,7 @@ app.command('/mermaid', async ({ client, ack, body, logger }) => {
   }
 });
 
-app.view('mermaid-modal-submitted', async ({ ack, body, logger }) => {
+app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
   let tempDir;
   logger.info('mermaid modal submitted');
   const origin = JSON.parse(body.view.private_metadata);
@@ -128,19 +131,29 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger }) => {
 
     logger.info('saved mermaid to ' + outputPath);
 
-    // TODO: handle private channel
-    // TODO: handle DM
+    // TODO: handle private channel - bot needs to be invited, or act in a limited functionality with response_url only
+    // TODO: handle DM - https://api.slack.com/methods/conversations.open could handle it, but it's a bit awkward
     // TODO: handle group DM?
+    // Try joining the channel, if it fails, open a DM
+    let userChannel;
     try {
-      await app.client.conversations.join({
+      await client.conversations.join({
         channel: origin.channel,
       });
     } catch (error) {
-      logger.error('Failed to join a channel', error);
+      // TODO: Detect private channel and don't try user DM
+      logger.error('Failed to join a channel, trying user', error);
+      // try {
+      //   userChannel = await client.conversations.open({
+      //     users: origin.user_id,
+      //   });
+      // } catch (error) {
+      //   logger.error('Failed to open an user channel', error);
+      // }
     }
 
     await (
-      await run
+      await mermaidCLI
     ).run(inputPath, outputPath, {
       outputFormat: 'png',
       parseMMDOptions: {
@@ -155,9 +168,13 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger }) => {
       },
     });
 
+    let channelToUpload = origin.channel;
+    if (userChannel) {
+      channelToUpload = userChannel.channel.id;
+    }
     // uploadV2 is not returning a ts I need to thread the message
-    const diagramUpload = await app.client.files.upload({
-      channels: origin.channel,
+    const diagramUpload = await client.files.upload({
+      channels: channelToUpload,
       file: fs.createReadStream(outputPath),
       filename: 'mermaid.png',
       initial_comment: `<@${origin.user_id}> created this Mermaid diagram:`,
@@ -168,26 +185,26 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger }) => {
       for (const shareChannel of Object.keys(
         diagramUpload.file.shares[shareType]
       )) {
-        diagramUpload.file.shares[shareType][shareChannel].forEach(
-          async (share) => {
-            await app.client.files.upload({
-              channels: shareChannel,
-              content: inputMermaid,
-              initial_comment: 'Mermaid document for the diagram above:',
-              thread_ts: share.ts,
-              filename: 'mermaid.mmd',
-              filetype: 'text',
-            });
-          }
-        );
+        for (const share of diagramUpload.file.shares[shareType][
+          shareChannel
+        ]) {
+          await client.files.upload({
+            channels: shareChannel,
+            content: inputMermaid,
+            initial_comment: 'Mermaid document for the diagram above:',
+            thread_ts: share.ts,
+            filename: 'mermaid.mmd',
+            filetype: 'text',
+          });
+        }
       }
     }
-    fs.rm(tempDir, { recursive: true });
+    fs.rmSync(tempDir, { recursive: true });
   } catch (error) {
     logger.error(error);
     if (tempDir) {
       if (fs.existsSync(tempDir)) {
-        fs.rm(tempDir, { recursive: true });
+        fs.rmSync(tempDir, { recursive: true });
       }
     }
     // TODO: specific error messages for common errors
@@ -198,6 +215,6 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger }) => {
 });
 
 (async () => {
-  await app.start(process.env.PORT || 3000);
+  await app.start();
   console.log('⚡️ Bolt app is running!');
 })();
