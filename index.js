@@ -7,6 +7,11 @@ const { App, LogLevel } = require('@slack/bolt');
 const mermaidCLI = import('@mermaid-js/mermaid-cli');
 const installationStore = require('./installationStore');
 
+const indexHTML = fs.readFileSync(path.resolve('./public/index.html'));
+const screenshotJPEG = fs.readFileSync(
+  path.resolve('./public/mermaid-for-slack-preview-screenshot.jpg')
+);
+
 const app = new App({
   logLevel: process.env.DEBUG ? LogLevel.DEBUG : LogLevel.INFO,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -32,13 +37,19 @@ const app = new App({
   ],
   customRoutes: [
     {
-      path: '/serve-mermaid/:id',
+      path: '/',
       method: ['GET'],
       handler: (req, res) => {
-        // TODO: verify :id is valid
-        return res.sendFile(
-          path.resolve(dataDir + '/' + req.params.id + '/output.png')
-        );
+        res.setHeader('Content-Type', 'text/html');
+        res.end(indexHTML);
+      },
+    },
+    {
+      path: '/mermaid-for-slack-preview-screenshot.jpg',
+      method: ['GET'],
+      handler: (req, res) => {
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.end(screenshotJPEG);
       },
     },
   ],
@@ -199,18 +210,18 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
         }
       }
     }
-    fs.rmSync(tempDir, { recursive: true });
   } catch (error) {
     logger.error(error);
+    // TODO: specific error messages for common errors
+    await axios.post(origin.response_url, {
+      text: 'Failed to generate mermaid diagram: `' + error.message + '`',
+    });
+  } finally {
     if (tempDir) {
       if (fs.existsSync(tempDir)) {
         fs.rmSync(tempDir, { recursive: true });
       }
     }
-    // TODO: specific error messages for common errors
-    await axios.post(origin.response_url, {
-      text: 'Failed to generate mermaid diagram: `' + error.message + '`',
-    });
   }
 });
 
