@@ -5,18 +5,24 @@
   "description": "Create Mermaid diagrams and charts in Slack",
   "main": "index.js",
   "scripts": {
+    "build": "tsc -p .",
+    "build:watch": "tsc -w -p .",
+    "start": "npm run build && node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "Jakub Mikulas",
   "license": "MIT",
   "dependencies": {
-    "@mermaid-js/mermaid-cli": "^10.3.1",
+    "@mermaid-js/mermaid-cli": "^10.4.0",
     "@slack/bolt": "^3.13.3",
     "ioredis": "^5.3.2"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.8",
-    "nodemon": "^3.0.1"
+    "@types/node": "^20.5.9",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   }
 }

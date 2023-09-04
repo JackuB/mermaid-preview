@@ -1,3 +1,4 @@
 node_modules
 data
 .DS_store
+dist

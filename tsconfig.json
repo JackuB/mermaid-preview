@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "target": "es2019",
+    "baseUrl": "src",
+    "outDir": "dist",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": ["es2019"],
+    "strict": true,
+    "esModuleInterop": true,
+    "declaration": true
+  },
+  "exclude": ["__tests__", "node_modules", "dist"]
+}
