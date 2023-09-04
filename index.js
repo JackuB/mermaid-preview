@@ -7,6 +7,7 @@ const { App, LogLevel } = require('@slack/bolt');
 const mermaidCLI = import('@mermaid-js/mermaid-cli');
 const installationStore = require('./installationStore');
 
+// I can't really get Bolt.js to serve static files, without replacing the whole OAuth/Express app
 const indexHTML = fs.readFileSync(path.resolve('./public/index.html'));
 const screenshotJPEG = fs.readFileSync(
   path.resolve('./public/mermaid-for-slack-preview-screenshot.jpg')
@@ -70,7 +71,7 @@ if (!fs.existsSync(dataDir)) {
 const defaultMermaid = `graph LR\n  ...`;
 
 app.command('/mermaid', async ({ client, ack, body, logger }) => {
-  logger.info('mermaid command called');
+  logger.info('mermaid command called', JSON.stringify(body, null, 2));
   try {
     await ack();
     await client.views.open({
@@ -146,21 +147,27 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
     // TODO: handle DM - https://api.slack.com/methods/conversations.open could handle it, but it's a bit awkward
     // TODO: handle group DM?
     // Try joining the channel, if it fails, open a DM
-    let userChannel;
-    try {
-      await client.conversations.join({
-        channel: origin.channel,
-      });
-    } catch (error) {
-      // TODO: Detect private channel and don't try user DM
-      logger.error('Failed to join a channel, trying user', error);
-      // try {
-      //   userChannel = await client.conversations.open({
-      //     users: origin.user_id,
-      //   });
-      // } catch (error) {
-      //   logger.error('Failed to open an user channel', error);
-      // }
+
+    let channelToUpload = origin.channel;
+
+    // Check for direct message
+    if (origin.channel.startsWith('D')) {
+      try {
+        userChannel = await client.conversations.open({
+          users: origin.user_id,
+        });
+        channelToUpload = userChannel.channel.id;
+      } catch (error) {
+        logger.error('Failed to open an user channel, but continuing', error);
+      }
+    } else {
+      try {
+        await client.conversations.join({
+          channel: origin.channel,
+        });
+      } catch (error) {
+        logger.error('Failed to join channel, but continuing', error);
+      }
     }
 
     await (
@@ -179,10 +186,6 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
       },
     });
 
-    let channelToUpload = origin.channel;
-    if (userChannel) {
-      channelToUpload = userChannel.channel.id;
-    }
     // uploadV2 is not returning a ts I need to thread the message
     const diagramUpload = await client.files.upload({
       channels: channelToUpload,
