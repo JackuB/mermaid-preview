@@ -42,6 +42,12 @@ if (!fs.existsSync(dataDir)) {
 // TODO: something related to this app!
 const defaultMermaid = `graph LR\n  ...`;
 
+type PrivateDataObject = {
+  user_id: string;
+  channel: string;
+  response_url: string;
+};
+
 app.command('/mermaid', async ({ client, ack, body, logger }) => {
   logger.info('mermaid command called', JSON.stringify(body, null, 2));
   try {
@@ -55,7 +61,7 @@ app.command('/mermaid', async ({ client, ack, body, logger }) => {
           user_id: body.user_id,
           channel: body.channel_id,
           response_url: body.response_url,
-        }),
+        } as PrivateDataObject),
         title: {
           type: 'plain_text',
           text: 'Create a Mermaid diagram',
@@ -101,7 +107,7 @@ app.command('/mermaid', async ({ client, ack, body, logger }) => {
 app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
   let tempDir;
   logger.info('mermaid modal submitted');
-  const origin = JSON.parse(body.view.private_metadata);
+  const origin: PrivateDataObject = JSON.parse(body.view.private_metadata);
   try {
     await ack();
     const inputMermaid =
@@ -146,7 +152,11 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
           channel: origin.channel,
         });
       } catch (error) {
-        logger.error('Failed to join channel, but continuing', error);
+        logger.error('Failed to join channel, stopping', error);
+        await axios.post(origin.response_url, {
+          text: "Mermaid can't access this channel. If it's a private channel, please invite Mermaid bot to it.",
+        });
+        return;
       }
     }
 
