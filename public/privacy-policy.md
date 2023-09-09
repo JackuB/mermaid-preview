@@ -1,6 +1,6 @@
 # Privacy Policy for "Mermaid for Slack"
 
-Last Updated: September 8, 2023
+_Last Updated: September 8, 2023_
 
 ## tl;dr
 
@@ -20,7 +20,7 @@ Mermaid charts you submit are processed only in-memory and are not stored on our
 
 ## 4. Data Storage and Retention
 
-Mermaid charts and their PNG renderings are not stored on our servers. They are generated on the fly and immediatelly uploaded to your Slack workspace. Even if upload fails or is cancelled, we don't persist any copy.
+Mermaid charts and their PNG renderings are not stored on our servers. They are generated on the fly and immediately uploaded to your Slack workspace. Even if the upload fails or is canceled, we don't persist any copy.
 
 ## 5. Data Sharing and Third Party Access
 
