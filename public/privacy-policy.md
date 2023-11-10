@@ -12,7 +12,7 @@ Thank you for choosing Mermaid for Slack, a Slack App designed to generate PNG p
 
 ## 2. Data We Collect
 
-Only data saved in a database are Slack App installation details, provided by Slack. This data is deleted when you uninstall the App from your workspace. We do not store any data that we don’t need for our operations.
+Only data saved in a database are Slack App installation details, provided by Slack. This data is deleted when you uninstall the App from your workspace. We do not store any data that we don't need for our operations.
 
 ## 3. How We Use Your Data
 
