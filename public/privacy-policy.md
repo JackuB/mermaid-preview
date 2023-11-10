@@ -28,7 +28,7 @@ Nothing is being shared with third parties.
 
 ## 6. User's Rights
 
-Data Deletion: Your data is deleted when you uninstall the App from your workspace.
+Data Deletion: Your data is deleted when you uninstall the App from your workspace. You may contact us to request deletion of your data at any time on hello@mermaid-for-slack.com.
 
 ## 7. Security Measures
 
