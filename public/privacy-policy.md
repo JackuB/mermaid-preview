@@ -1,4 +1,4 @@
-# Privacy Policy for "Mermaid for Slack"
+# Privacy Policy for "Mermaid Preview"
 
 _Last Updated: November 10, 2023_
 
@@ -8,7 +8,7 @@ Mermaid charts or their PNG renderings are not stored on our servers. Only piece
 
 ## 1. Introduction
 
-Thank you for choosing Mermaid for Slack, a Slack App designed to generate PNG previews of Mermaid.js charts. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our App. Please read this policy carefully and if you do not agree with its terms, please refrain from using our App.
+Thank you for choosing Mermaid Preview, a Slack App designed to generate PNG previews of Mermaid.js charts. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our App. Please read this policy carefully and if you do not agree with its terms, please refrain from using our App.
 
 ## 2. Data We Collect
 
@@ -28,7 +28,7 @@ Nothing is being shared with third parties.
 
 ## 6. User's Rights
 
-Data Deletion: Your data is deleted when you uninstall the App from your workspace. You may contact us to request deletion of your data at any time on hello@mermaid-for-slack.com.
+Data Deletion: Your data is deleted when you uninstall the App from your workspace. You may contact us to request deletion of your data at any time on hello@mermaid-preview.com.
 
 ## 7. Security Measures
 
@@ -36,8 +36,8 @@ Application uses encryption where possible. Application does not try to read any
 
 ## 8. Changes to This Privacy Policy
 
-If this policy would ever need to be updated, it will be done publicly in the Application's repository at https://github.com/JackuB/mermaid-for-slack.
+If this policy would ever need to be updated, it will be done publicly in the Application's repository at https://github.com/JackuB/mermaid-preview.
 
 ## 9. Contact Us
 
-Use GitHub Issues on https://github.com/JackuB/mermaid-for-slack or email hello@mermaid-for-slack.com.
+Use GitHub Issues on https://github.com/JackuB/mermaid-preview or email hello@mermaid-preview.com.
