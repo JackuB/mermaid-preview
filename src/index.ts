@@ -156,7 +156,7 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
         await axios.post(origin.response_url, {
           text: "Mermaid can't access this channel. If it's a private channel, please invite Mermaid bot to it.",
         });
-        return;
+        //return;
       }
     }
 
