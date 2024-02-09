@@ -3,7 +3,7 @@ import * as path from 'path';
 import { type CustomRoute } from '@slack/bolt';
 
 const indexHTML = fs.readFileSync(
-  path.resolve(__dirname, '../public/index.html')
+  path.resolve(__dirname, '../../public/index.html')
 );
 
 const customRoutes: CustomRoute[] = [

@@ -115,6 +115,7 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
 
     // Check for direct message
     if (origin.channel.startsWith('D')) {
+      logger.info('Direct message detected');
       try {
         const userChannel = await client.conversations.open({
           users: origin.user_id,
@@ -122,6 +123,8 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
         channelToUpload = userChannel.channel?.id
           ? userChannel.channel.id
           : channelToUpload;
+        logger.info('User channel', userChannel);
+        logger.info('Channel selected', channelToUpload);
       } catch (error) {
         logger.error('Failed to open an user channel, but continuing', error);
       }
@@ -169,6 +172,12 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
       initial_comment: `<@${origin.user_id}> created this Mermaid diagram:`,
       title: 'Mermaid diagram',
     });
+
+    if (channelToUpload.startsWith('D')) {
+      await axios.post(origin.response_url, {
+        text: `Mermaid diagram uploaded to <#${channelToUpload}>:`,
+      });
+    }
 
     if (diagramUpload.file?.shares) {
       const shareKeys = Object.keys(diagramUpload.file.shares);
