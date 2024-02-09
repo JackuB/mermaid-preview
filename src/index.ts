@@ -225,6 +225,12 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
     }
   } catch (error) {
     logger.error(error);
+    logger.error('name', (error as Error).name);
+    logger.error('\n\n');
+    logger.error('message', (error as Error).message);
+    logger.error('\n\n');
+    logger.error('typeof', typeof error);
+    logger.error('\n\n');
     switch ((error as Error).name) {
       case 'UnknownDiagramError': {
         await axios.post(origin.response_url, {

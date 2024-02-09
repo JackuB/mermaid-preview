@@ -11,5 +11,5 @@
     "esModuleInterop": true,
     "declaration": true
   },
-  "exclude": ["__tests__", "node_modules", "dist"]
+  "exclude": ["__tests__", "tests", "node_modules", "dist"]
 }
