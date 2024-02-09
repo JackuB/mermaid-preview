@@ -27,6 +27,7 @@ RUN npm ci
 
 # Copy application code
 COPY --link . .
+RUN npm run build
 
 
 # Final stage for app image
@@ -48,4 +49,4 @@ COPY --from=build /app /app
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "node", "index.js" ]
+CMD [ "node", "dist/index.js" ]

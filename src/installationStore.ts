@@ -1,10 +1,16 @@
-const Redis = require('ioredis');
+import { type InstallationStore } from '@slack/bolt';
+import Redis from 'ioredis';
+
+if (!process.env.REDIS_URL) {
+  throw new Error('Missing REDIS_URL');
+}
 const redis = new Redis(process.env.REDIS_URL, { family: 6 });
 redis.on('connect', function () {
   console.info('Redis connected');
 });
 
-const installationStore = {
+// TODO: error handling on redis instance?
+const installationStore: InstallationStore = {
   storeInstallation: async (installation) => {
     const installationString = JSON.stringify(installation);
     // Bolt will pass your handler an installation object
@@ -14,11 +20,13 @@ const installationStore = {
       installation.enterprise !== undefined
     ) {
       // handle storing org-wide app installation
-      return redis.set(installation.enterprise.id, installationString);
+      await redis.set(installation.enterprise.id, installationString);
+      return;
     }
     if (installation.team !== undefined) {
       // single team app installation
-      return redis.set(installation.team.id, installationString);
+      await redis.set(installation.team.id, installationString);
+      return;
     }
     throw new Error('Failed saving installation data to installationStore');
   },
@@ -31,12 +39,12 @@ const installationStore = {
     ) {
       // handle org wide app installation lookup
       const res = await redis.get(installQuery.enterpriseId);
-      return JSON.parse(res);
+      return res ? JSON.parse(res) : null;
     }
     if (installQuery.teamId !== undefined) {
       // single team app installation lookup
       const res = await redis.get(installQuery.teamId);
-      return JSON.parse(res);
+      return res ? JSON.parse(res) : null;
     }
     throw new Error('Failed fetching installation');
   },
@@ -48,14 +56,16 @@ const installationStore = {
       installQuery.enterpriseId !== undefined
     ) {
       // org wide app installation deletion
-      return redis.del(installQuery.enterpriseId);
+      await redis.del(installQuery.enterpriseId);
+      return;
     }
     if (installQuery.teamId !== undefined) {
       // single team app installation deletion
-      return redis.del(installQuery.teamId);
+      await redis.del(installQuery.teamId);
+      return;
     }
     throw new Error('Failed to delete installation');
   },
 };
 
-module.exports = installationStore;
+export default installationStore;
