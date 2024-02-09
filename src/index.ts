@@ -135,7 +135,7 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
     const outputPath = path.resolve(tempDir + '/output.png');
     fs.writeFileSync(inputPath, inputMermaid);
 
-    logger.info('saved mermaid to ' + outputPath);
+    logger.info('saved mermaid to ' + inputPath);
 
     // TODO: handle private channel - bot needs to be invited, or act in a limited functionality with response_url only
     // TODO: handle DM - https://api.slack.com/methods/conversations.open could handle it, but it's a bit awkward
@@ -190,6 +190,7 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
         },
       }
     );
+    logger.info('saved mermaid preview to ' + outputPath);
 
     // uploadV2 is not returning a ts I need to thread the message
     const diagramUpload = await client.files.upload({
@@ -225,30 +226,28 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
     }
   } catch (error) {
     logger.error(error);
-    logger.error('name', (error as Error).name);
+    logger.error('error.name', (error as Error).name);
     logger.error('\n\n');
-    logger.error('message', (error as Error).message);
+    logger.error('error.message', (error as Error).message);
     logger.error('\n\n');
-    logger.error('typeof', typeof error);
+    logger.error('typeof error', typeof error);
     logger.error('\n\n');
-    switch ((error as Error).name) {
-      case 'UnknownDiagramError': {
-        await axios.post(origin.response_url, {
-          text: `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${
-            (error as Error).message || ''
-          }\`\`\``,
-        });
-        break;
-      }
-      default: {
-        await axios.post(origin.response_url, {
-          text:
-            'Failed to generate mermaid diagram: `' +
-            (error as Error).message +
-            '`',
-        });
-        break;
-      }
+    // "Known" error from Mermaid CLI
+    if ((error as Error).message.startsWith('Evaluation failed: ')) {
+      const userFriendlyError = (error as Error).message
+        .replace(/    at .*$/gm, '')
+        .replace(/^Evaluation failed: /, '')
+        .replace(/^\n$/gm, '');
+      await axios.post(origin.response_url, {
+        text: `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${userFriendlyError}\`\`\``,
+      });
+    } else {
+      await axios.post(origin.response_url, {
+        text:
+          'Failed to generate mermaid diagram: ```' +
+          (error as Error).message +
+          '```',
+      });
     }
   } finally {
     if (tempDir) {
