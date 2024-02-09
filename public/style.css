@@ -15,9 +15,6 @@ img {
 }
 
 main {
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
   min-height: calc(100vh - 100px);
   padding: 0 20px;
@@ -25,12 +22,15 @@ main {
   margin: 0 auto;
 }
 
-main.home {
+.introbox {
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
-@media (max-width: 600px) {
-  main {
+@media (max-width: 800px) {
+  .introbox {
     flex-direction: column;
   }
   .intro {
@@ -47,4 +47,54 @@ footer {
   text-align: center;
   margin-top: 20px;
   padding: 10px;
+}
+
+code.block {
+  display: block;
+  background-color: #fffeef;
+  padding: 16px;
+  border-radius: 8px;
+  color: rgb(48, 48, 36);
+  min-width: 450px;
+}
+
+code .keyword {
+  color: #d73a49;
+}
+
+code .desc {
+  color: #eba16c;
+}
+
+code .symbol {
+  color: #7cba31;
+  font-weight: bold;
+}
+
+code .name {
+  color: #7cba31;
+  font-weight: bold;
+}
+
+code .blockDescription {
+  color: #979b7b;
+  font-size: 60%;
+  font-family: sans-serif;
+  padding-bottom: 8px;
+  display: inline-block;
+  text-transform: uppercase;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+.previewImg {
+  border-radius: 8px;
+  border: 8px solid #ddd;
+  max-width: 80%;
+  margin: 10px auto;
 }
