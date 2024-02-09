@@ -16,3 +16,4 @@ The app listens for a `/mermaid` command and opens a Slack modal where you can e
 
 - [ ] Edit already posted diagram (through Modal?)
 - [ ] Automatically detect Mermaid diagrams in messages and render them?
+- [ ] Live preview of the mermaid document in the modal? Seems like this can't be done with Slack's UI limitations.

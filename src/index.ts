@@ -13,6 +13,9 @@ import customRoutes from './customRoutes.js';
 import scopes from './scopes.js';
 import port from './port.js';
 
+const mermaidPreviewHintText =
+  ':bulb: Use a tool like <https://mermaid.live|Mermaid.live> to preview your Mermaid before posting';
+
 const app = new App({
   logLevel: process.env.DEBUG ? LogLevel.DEBUG : LogLevel.INFO,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -48,10 +51,17 @@ type PrivateDataObject = {
   response_url: string;
 };
 
-app.command('/mermaid', async ({ client, ack, body, logger }) => {
+app.command('/mermaid', async ({ client, ack, body, logger, respond }) => {
   logger.info('mermaid command called', JSON.stringify(body, null, 2));
   try {
     await ack();
+    if (body.text) {
+      return await respond(
+        `${
+          body.text.trim() === 'help' ? '' : 'Unknown command\n\n'
+        }*Mermaid Preview* is a Slack app that allows you to generate previews Mermaid diagrams in Slack. See <http://mermaid-js.github.io/mermaid/#/|Mermaid documentation> for more information. Run \`/mermaid\` for an interactive dialog.\n\n${mermaidPreviewHintText}`
+      );
+    }
     await client.views.open({
       trigger_id: body.trigger_id,
       view: {
@@ -71,7 +81,7 @@ app.command('/mermaid', async ({ client, ack, body, logger }) => {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: ':bulb: Use a tool like <https://mermaid.live|Mermaid.live> to preview your Mermaid before posting',
+              text: mermaidPreviewHintText,
             },
           },
           {
