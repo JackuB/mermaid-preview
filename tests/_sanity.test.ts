@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest';
 import customRoutes from '../src/init/customRoutes';
 
 // Sanity check for Jest TS config

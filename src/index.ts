@@ -5,9 +5,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 
 import axios from 'axios';
-// import * as mermaid from 'mermaid';
-const mermaid = import('mermaid');
-const mermaidCLIModule = import('@mermaid-js/mermaid-cli');
+import { isMermaidInputValid, renderMermaidToFile } from './mermaid';
 import { app, dataDir } from './init';
 
 const mermaidPreviewHintText =
@@ -99,11 +97,8 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
       });
       return;
     }
-    // Gotta love ESM...
-    const mermaidInstance = await mermaid;
-    const validMermaid = await mermaidInstance.default.parse(inputMermaid, {
-      suppressErrors: true,
-    });
+
+    const validMermaid = await isMermaidInputValid(inputMermaid);
     if (!validMermaid) {
       await axios.post(origin.response_url, {
         text: `Mermaid diagram is invalid.\n${mermaidPreviewHintText}`,
@@ -177,27 +172,8 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
       }
     }
 
-    await (
-      await mermaidCLIModule
-    ).run(
-      inputPath,
-      // @ts-ignore - ignoring a type for .png pattern in outputPath
-      outputPath,
-      {
-        outputFormat: 'png',
-        parseMMDOptions: {
-          viewport: {
-            width: 2048,
-            height: 2048,
-          },
-        },
-        puppeteerConfig: {
-          headless: 'new',
-          args: ['--no-sandbox'], // I couldn't figure out how to run this in a container without this
-        },
-      }
-    );
-    logger.info('saved mermaid preview to ' + outputPath);
+    renderMermaidToFile(inputPath, outputPath);
+    logger.info('Saved mermaid preview to ' + outputPath);
 
     // uploadV2 is not returning a ts I need to thread the message
     const diagramUpload = await client.files.upload({
