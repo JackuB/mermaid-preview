@@ -8,7 +8,7 @@
     "build": "tsc -p . && npm run build:markdown",
     "build:markdown": "marked -i public/privacy-policy.md -o public/privacy-policy.html && marked -i public/tos.md -o public/tos.html",
     "build:watch": "tsc -w -p .",
-    "start": "npm run build && node dist/app.js",
+    "start": "npm run build && node dist/index.js",
     "test": "jest"
   },
   "keywords": [],

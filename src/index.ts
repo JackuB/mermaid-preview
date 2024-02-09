@@ -4,43 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
-import { App, LogLevel } from '@slack/bolt';
 import axios from 'axios';
 const mermaidCLIModule = import('@mermaid-js/mermaid-cli');
-
-import installationStore from './installationStore.js';
-import customRoutes from './customRoutes.js';
-import scopes from './scopes.js';
-import port from './port.js';
+import { app, dataDir } from './init';
 
 const mermaidPreviewHintText =
   ':bulb: Use a tool like <https://mermaid.live|Mermaid.live> to preview your Mermaid before posting';
-
-const app = new App({
-  logLevel: process.env.DEBUG ? LogLevel.DEBUG : LogLevel.INFO,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-  clientId: process.env.SLACK_CLIENT_ID,
-  clientSecret: process.env.SLACK_CLIENT_SECRET,
-  installerOptions: {
-    // State verification sounds like something that should be enabled for OAuth, but there is a bunch of oddities and error you encounter
-    // https://github.com/slackapi/bolt-js/issues/1316
-    // https://github.com/slackapi/bolt-js/issues/1355
-    stateVerification: false,
-    directInstall: true,
-  },
-  scopes,
-  customRoutes,
-  installationStore,
-  port,
-  // Enable the following when using socket mode
-  // socketMode: true, // add this
-  // appToken: process.env.SLACK_APP_TOKEN, // add this
-});
-
-const dataDir = './data';
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir);
-}
 
 // TODO: something related to this app!
 const defaultMermaid = `graph LR\n  ...`;
@@ -227,19 +196,15 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
   } catch (error) {
     logger.error(error);
     logger.error('error.name', (error as Error).name);
-    logger.error('\n\n');
     logger.error('error.message', (error as Error).message);
-    logger.error('\n\n');
-    logger.error('typeof error', typeof error);
-    logger.error('\n\n');
     // "Known" error from Mermaid CLI
     if ((error as Error).message.startsWith('Evaluation failed: ')) {
       const userFriendlyError = (error as Error).message
-        .replace(/    at .*$/gm, '')
+        .replace(/    at .*$/gm, '') // remove stack trace
         .replace(/^Evaluation failed: /, '')
         .replace(/^\n$/gm, '');
       await axios.post(origin.response_url, {
-        text: `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${userFriendlyError}\`\`\``,
+        text: `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${userFriendlyError}\`\`\`${mermaidPreviewHintText}`,
       });
     } else {
       await axios.post(origin.response_url, {
@@ -260,5 +225,5 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
 
 (async () => {
   await app.start();
-  console.log('⚡️ Bolt app is running!');
+  console.info('⚡️ Bolt app is running!');
 })();
