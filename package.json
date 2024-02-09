@@ -13,7 +13,7 @@
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^10.3.1",
     "@slack/bolt": "^3.13.3",
-    "redis": "^4.6.8"
+    "ioredis": "^5.3.2"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.8",
