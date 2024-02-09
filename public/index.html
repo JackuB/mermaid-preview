@@ -1,9 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
     <title>Mermaid Preview</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <link href="/public/css/normalize.css" rel="stylesheet" type="text/css" />
+    <link href="/public/css/webflow.css" rel="stylesheet" type="text/css" />
+    <link
+      href="/public/css/mermaid-preview.webflow.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link
+      href="https://fonts.gstatic.com"
+      rel="preconnect"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"
+      type="text/javascript"
+    ></script>
+    <script type="text/javascript">
+      WebFont.load({ google: { families: ['Ubuntu Mono:regular'] } });
+    </script>
+    <link
+      href="/public/images/favicon.ico"
+      rel="shortcut icon"
+      type="image/x-icon"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/public/images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/public/images/favicon-16x16.png"
+    />
     <meta
       name="description"
       content="Create Mermaid diagrams and charts in Slack"
@@ -14,108 +51,190 @@
     />
     <meta name="slack-app-id" content="A05P92WP51V" />
     <link rel="canonical" href="https://mermaid-preview.com" />
-    <link rel="stylesheet" href="/public/style.css" />
   </head>
-  <body>
-    <main class="home">
-      <div class="introbox">
-        <div>
-          <img
-            src="/public/mermaid-for-slack-preview-screenshot.jpg"
-            alt="Mermaid Preview screenshot"
-          />
-        </div>
-        <div class="intro">
-          <h1>Mermaid Preview</h1>
-          <p>
-            Create
-            <a href="https://mermaid.js.org">Mermaid diagrams and charts</a> in
-            Slack with a <code>/mermaid</code> command.
-          </p>
-          <h3>How it works?</h3>
-          <p>
-            The app opens a modal on receiving a <code>`/mermaid`</code> command
-            where users can input their Mermaid diagram code. Once submitted,
-            the app generates a PNG and posts it as a message.
-          </p>
-          <a
-            href="https://slack.com/oauth/v2/authorize?client_id=4169357715463.5791098787063&scope=channels:join,chat:write,commands,files:write,im:write&user_scope="
-            ><img
-              alt="Add to Slack"
-              height="40"
-              width="139"
-              src="https://platform.slack-edge.com/img/add_to_slack.png"
+  <body class="body">
+    <div class="w-layout-blockcontainer pagecontainer w-container">
+      <div class="w-layout-vflex">
+        <section class="section">
+          <h1 class="mermaidgradient">Mermaid Preview</h1>
+          <div class="text-block">
+            Free &amp; <a
+              href="https://github.com/JackuB/mermaid-preview"
+              class="introlink"
+              >open-source</a
+            >
+            integration for
+            <a href="https://mermaid.js.org/" class="introlink">Mermaid.js</a>
+            diagrams in Slack
+          </div>
+          <div class="div-block">
+            <a href="#" class="link-block w-inline-block"
+              ><img
+                src="/public/images/add_to_slack2x.png"
+                alt='"Add to Slack" button'
+                width="139"
+                class="image"
+            /></a>
+          </div>
+        </section>
+      </div>
+      <section>
+        <div
+          id="w-node-_3886995d-37f4-9f02-ea52-db54e7a31d48-27bc0839"
+          class="w-layout-layout quick-stack-2 wf-layout-layout"
+        >
+          <div
+            id="w-node-_3886995d-37f4-9f02-ea52-db54e7a31d49-27bc0839"
+            class="w-layout-cell"
+          >
+            <img
+              src="/public/images/mermaid-for-slack-preview-screenshot.jpg"
+              loading="lazy"
               srcset="
-                https://platform.slack-edge.com/img/add_to_slack.png    1x,
-                https://platform.slack-edge.com/img/add_to_slack@2x.png 2x
+                /public/images/mermaid-for-slack-preview-screenshot-p-500.jpg   500w,
+                /public/images/mermaid-for-slack-preview-screenshot-p-800.jpg   800w,
+                /public/images/mermaid-for-slack-preview-screenshot-p-1080.jpg 1080w,
+                /public/images/mermaid-for-slack-preview-screenshot.jpg        1204w
               "
-          /></a>
+              alt="Mermaid.js diagram and /mermaid Slack command shown"
+              sizes="(max-width: 767px) 96vw, (max-width: 991px) 708px, 920px"
+              class="image-2"
+            />
+          </div>
+          <div
+            id="w-node-_3886995d-37f4-9f02-ea52-db54e7a31d4a-27bc0839"
+            class="w-layout-cell"
+          >
+            <h2 class="heading-2">
+              Share rendered Mermaid.js charts without leaving Slack
+            </h2>
+            <p class="paragraph">
+              Communicate ideas or plans right in your Slack.
+              <a
+                href="https://mermaid.js.org/syntax/flowchart.html"
+                class="textlink"
+                >Flowcharts</a
+              >,
+              <a href="https://mermaid.js.org/syntax/pie.html" class="textlink"
+                >Pie charts</a
+              >,
+              <a
+                href="https://mermaid.js.org/syntax/userJourney.html"
+                class="textlink"
+                >User journeys</a
+              >,
+              <a
+                href="https://mermaid.js.org/syntax/timeline.html"
+                class="textlink"
+                >Timelines</a
+              >, and
+              <a href="https://mermaid.js.org/intro/" class="textlink"
+                >everything else that Mermaid.js offers</a
+              >.
+            </p>
+          </div>
         </div>
-      </div>
-      <h4>Use Mermaid diagrams to describe your ideas in Slack</h4>
-      <div class="introbox">
-        <div>
-          <code class="block">
-            <span class="blockDescription"
-              >Mermaid sequence diagram example</span
-            ><br />
-            <span class="name">sequenceDiagram</span><br />
-            &emsp;&emsp;<span class="desc">actor</span>
-            <span class="keyword">U</span> <span class="desc">as</span>
-            <span class="keyword">Slack User</span><br />
-            &emsp;&emsp;<span class="desc">participant</span>
-            <span class="keyword">S</span> <span class="desc">as</span>
-            <span class="keyword">Slack API/Client</span><br />
-            &emsp;&emsp;<span class="desc">participant</span>
-            <span class="keyword">M</span> <span class="desc">as</span>
-            <span class="keyword">Mermaid Preview</span><br />
-            <br />
-            &emsp;&emsp;<span class="keyword">U</span
-            ><span class="symbol">-->></span><span class="keyword">M</span>: Use
-            /mermaid command<br />
-            &emsp;&emsp;<span class="keyword">M</span
-            ><span class="symbol">-->></span><span class="keyword">U</span>: Let
-            user input Mermaid chart<br />
-            &emsp;&emsp;<span class="keyword">S</span
-            ><span class="symbol">->></span><span class="keyword">U</span>:
-            Shows dialog in the UI<br />
-            &emsp;&emsp;<span class="keyword">U</span
-            ><span class="symbol">-->></span><span class="keyword">M</span>:
-            Submit dialog<br />
-            &emsp;&emsp;<span class="desc">Note over</span>
-            <span class="keyword">M</span>: Generate Mermaid diagram preview
-            PNG<br />
-            &emsp;&emsp;<span class="keyword">M</span
-            ><span class="symbol">->></span><span class="keyword">S</span>:
-            Upload rendered Mermaid<br />
-            &emsp;&emsp;<span class="keyword">M</span
-            ><span class="symbol">-->></span><span class="keyword">U</span>:
-            Create new message with rendered Mermaid
-          </code>
+      </section>
+      <div
+        id="w-node-a1eb0977-b3e2-cec8-3cf2-e7861cf5cb45-27bc0839"
+        class="w-layout-layout quick-stack wf-layout-layout"
+      >
+        <div
+          id="w-node-_57fa6a0e-a4cf-f464-0e66-bdad1f423eee-27bc0839"
+          class="w-layout-cell"
+        >
+          <h2 class="heading-2">
+            Use Mermaid.js code to communicate your ideas
+          </h2>
+          <p class="paragraph">
+            See
+            <a href="https://mermaid.js.org/intro/" class="textlink"
+              >Mermaid.js Documentation</a
+            >
+            to explore all the different chart types and options it provides.
+            Here is an example describing this application:
+          </p>
+          <div class="codeexamplepreface">Mermaid.js code sample</div>
+          <p class="codeexample">
+            <span class="codeexampletitle">sequenceDiagram</span><br />  <span
+              class="codeexampledesc"
+              >actor</span
+            >
+            U <span class="codeexampledesc">as</span> Slack User<br />  <span
+              class="codeexampledesc"
+              >participant</span
+            >
+            S <span class="codeexampledesc">as</span> Slack API/Client<br />  <span
+              class="codeexampledesc"
+              >participant</span
+            >
+            M <span class="codeexampledesc">as</span> Mermaid Preview  <br /><br />  U<span
+              class="codeexampletitle"
+              >--&gt;&gt;</span
+            >M: Use /mermaid command<br />  M<span class="codeexampletitle"
+              >--&gt;&gt;</span
+            >U: Let user input Mermaid chart<br />  S<span
+              class="codeexampletitle"
+              >-&gt;&gt;</span
+            >U: Shows dialog in the UI<br />  U<span class="codeexampletitle"
+              >--&gt;&gt;</span
+            >M: Submit dialog<br />  <span class="codeexampledesc"
+              >Note over</span
+            >
+            M: Generate Mermaid diagram preview PNG<br />  M<span
+              class="codeexampletitle"
+              >-&gt;&gt;</span
+            >S: Upload rendered Mermaid<br />  M<span class="codeexampletitle"
+              >--&gt;&gt;</span
+            >U: Create new message with rendered Mermaid
+          </p>
         </div>
-        <div>
+        <div
+          id="w-node-_846a4733-6ca3-2fd8-a048-10a6f7f3f2b2-27bc0839"
+          class="w-layout-cell cell"
+        >
           <img
-            src="/public/mermaid-preview-app-diagram.png"
-            class="previewImg"
-            alt="Diagram of Mermaid Preview app"
+            src="/public/images/mermaid-preview-app-diagram.png"
+            loading="lazy"
+            sizes="(max-width: 767px) 96vw, (max-width: 991px) 708px, 920px"
+            srcset="
+              /public/images/mermaid-preview-app-diagram-p-500.png   500w,
+              /public/images/mermaid-preview-app-diagram-p-800.png   800w,
+              /public/images/mermaid-preview-app-diagram-p-1080.png 1080w,
+              /public/images/mermaid-preview-app-diagram.png        1138w
+            "
+            alt="Mermaid.js chart rendered inside a Slack Application"
+            class="image-3"
           />
         </div>
       </div>
-    </main>
-    <footer>
-      <a href="https://github.com/JackuB/mermaid-preview"
-        >Source code on GitHub</a
-      >
-      |
-      <a href="https://github.com/JackuB/mermaid-preview/issues/new"
-        >Report an issue</a
-      >
-      |
-      <a href="public/privacy-policy.html">Privacy Policy</a>
-      |
-      <a href="public/tos.html">Terms of Service</a>
-      |
-      <a href="public/support.html">Support</a>
-    </footer>
+      <div class="footer">
+        <a href="https://github.com/JackuB/mermaid-preview" class="footerlink"
+          >Source code on GitHub</a
+        >
+        |
+        <a
+          href="https://github.com/JackuB/mermaid-preview/issues/new"
+          class="footerlink"
+          >Report an issue</a
+        >
+        |
+        <a
+          href="https://mermaid-preview.com/public/privacy-policy.html"
+          class="footerlink"
+          >Privacy Policy</a
+        >
+        |
+        <a href="https://mermaid-preview.com/public/tos.html" class="footerlink"
+          >Terms of Service</a
+        >
+        |
+        <a
+          href="https://mermaid-preview.com/public/support.html"
+          class="footerlink"
+          >Support</a
+        >
+      </div>
+    </div>
   </body>
 </html>

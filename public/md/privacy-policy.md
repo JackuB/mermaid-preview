@@ -1,7 +1,3 @@
-# [Mermaid Preview](https://mermaid-preview.com)
-
-## Privacy Policy
-
 _Last Updated: November 10, 2023_
 
 ### tl;dr

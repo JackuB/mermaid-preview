@@ -1,7 +1,3 @@
-# [Mermaid Preview](https://mermaid-preview.com)
-
-## Terms of Service (ToS)
-
 _Last Updated: September 9, 2023_
 
 ### 1. Introduction

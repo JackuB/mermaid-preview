@@ -80,6 +80,9 @@ app.command('/mermaid', async ({ client, ack, body, logger, respond }) => {
     });
   } catch (error) {
     logger.error(error);
+    return await respond(
+      `Failed to open Mermaid Preview dialog: \`${(error as Error).message}\``
+    );
   }
 });
 
