@@ -5,6 +5,8 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 
 import axios from 'axios';
+// import * as mermaid from 'mermaid';
+const mermaid = import('mermaid');
 const mermaidCLIModule = import('@mermaid-js/mermaid-cli');
 import { app, dataDir } from './init';
 
@@ -94,6 +96,17 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
     if (!inputMermaid) {
       await axios.post(origin.response_url, {
         text: "Mermaid diagram can't be empty",
+      });
+      return;
+    }
+    // Gotta love ESM...
+    const mermaidInstance = await mermaid;
+    const validMermaid = await mermaidInstance.default.parse(inputMermaid, {
+      suppressErrors: true,
+    });
+    if (!validMermaid) {
+      await axios.post(origin.response_url, {
+        text: `Mermaid diagram is invalid.\n${mermaidPreviewHintText}`,
       });
       return;
     }
