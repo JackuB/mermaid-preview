@@ -4,6 +4,7 @@ import { App, LogLevel } from '@slack/bolt';
 import installationStore from './installationStore';
 import customRoutes from './customRoutes';
 import scopes from './scopes';
+import { failedInstallationPageHTML } from './failedInstallationPage';
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
@@ -20,25 +21,9 @@ const app = new App({
     directInstall: true,
     callbackOptions: {
       failure: (error, _installOptions, req, res) => {
-        console.log('Failed installation', error);
+        console.log('Failed installation', error, _installOptions);
         res.statusCode = 200;
-        res.end(`
-        <html>
-        <head>
-        <style>
-        body {
-          padding: 10px 15px;
-          font-family: verdana;
-          text-align: center;
-        }
-        </style>
-        </head>
-        <body>
-        <h2><a href="https://mermaid-preview.com">Mermaid Preview</a> was not installed</h2>
-        <p>You can try to <a href="https://mermaid-preview.com">install Mermaid Preview</a> again!</p>
-        </body>
-        </html>
-        `);
+        res.end(failedInstallationPageHTML);
       },
     },
   },
