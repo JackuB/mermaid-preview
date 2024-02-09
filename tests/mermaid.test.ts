@@ -3,19 +3,15 @@ import * as path from 'path';
 import * as os from 'os';
 import { expect, describe, it } from 'vitest';
 import { isMermaidInputValid, renderMermaidToFile } from '../src/mermaid';
+import validDiagrams from './valid-diagrams/valid-diagrams';
 
 describe('isMermaidInputValid', () => {
-  it('returns true for valid input', async () => {
-    const validMermaid = `
-    graph TD;
-      A-->B;
-      A-->C;
-      B-->D;
-      C-->D;
-    `;
-    const result = await isMermaidInputValid(validMermaid);
-    expect(result).toBe(true);
-  });
+  for (const diagramType of validDiagrams) {
+    it(`returns true for valid ${diagramType.type}`, async () => {
+      const result = await isMermaidInputValid(diagramType.input);
+      expect(result).toBe(true);
+    });
+  }
 
   it('returns false for empty input', async () => {
     const empty = ``;
@@ -43,29 +39,30 @@ describe('isMermaidInputValid', () => {
 });
 
 describe('renderMermaidToFile', () => {
-  it('creates a file on specified output location', async () => {
-    const validMermaid = `
-    graph TD;
-      A-->B;
-      A-->C;
-      B-->D;
-      C-->D;
-    `;
+  for (const diagramType of validDiagrams) {
+    it(`creates a file for valid ${diagramType.type}`, async () => {
+      const tmpDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'mermaid-preview-test-')
+      );
+      // Local output
+      // let tmpDir = './test-tmp';
+      // if (!fs.existsSync('./test-tmp')) {
+      //   fs.mkdirSync('./test-tmp');
+      // }
 
-    const tmpDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), 'mermaid-preview-test-')
-    );
+      const inputPath = path.resolve(tmpDir + `/input-${diagramType.type}.mmd`);
+      const outputPath = path.resolve(
+        tmpDir + `/output-${diagramType.type}.png`
+      );
 
-    const inputPath = path.resolve(tmpDir + '/input.mmd');
-    const outputPath = path.resolve(tmpDir + '/output.png');
+      const outputExistsBeforeTest = fs.existsSync(outputPath);
+      expect(outputExistsBeforeTest).toBe(false);
+      fs.writeFileSync(inputPath, diagramType.input);
 
-    const outputExistsBeforeTest = fs.existsSync(outputPath);
-    expect(outputExistsBeforeTest).toBe(false);
-    fs.writeFileSync(inputPath, validMermaid);
+      await renderMermaidToFile(inputPath, outputPath);
 
-    await renderMermaidToFile(inputPath, outputPath);
-
-    const outputExistsAfterTest = fs.existsSync(outputPath);
-    expect(outputExistsAfterTest).toBe(true);
-  });
+      const outputExistsAfterTest = fs.existsSync(outputPath);
+      expect(outputExistsAfterTest).toBe(true);
+    });
+  }
 }, 30000);

@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Create Mermaid diagrams and charts in Slack",
-  "main": "index.js",
   "scripts": {
     "build": "tsc -p . && npm run build:markdown",
     "build:markdown": "scripts/build-md-files.sh",

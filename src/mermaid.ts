@@ -6,12 +6,25 @@ export async function isMermaidInputValid(
 ): Promise<boolean> {
   // Gotta love ESM...
   const mermaidInstance = (await mermaid) as any;
-  const isMermaidInputValid = await mermaidInstance.default.parse(
-    mermaidInput,
-    {
-      suppressErrors: true,
+  let isMermaidInputValid = false;
+  try {
+    isMermaidInputValid = await mermaidInstance.default.parse(mermaidInput, {
+      suppressErrors: false, // We need to capture errors because of the DOMPurify issue
+    });
+  } catch (error) {
+    /*
+      There is an open issue with DOMPurify build
+      https://github.com/mermaid-js/mermaid/issues/5204
+      So the diagram might be valid, but the parsing will fail
+      It is a specific case, so we are just going to log the error
+      Validation works for other types
+    */
+    if ((error as Error).message === 'DOMPurify.addHook is not a function') {
+      return true;
+    } else {
+      console.error('Mermaid parsing error', error);
     }
-  );
+  }
   return !!isMermaidInputValid;
 }
 
