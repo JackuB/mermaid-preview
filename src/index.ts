@@ -147,11 +147,33 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
           channel: origin.channel,
         });
       } catch (error) {
+        // Joining a private channel can be tricky...
         logger.error('Failed to join channel, stopping', error);
-        await axios.post(origin.response_url, {
-          text: "Mermaid can't access this channel. If it's a private channel, please invite Mermaid bot to it.",
-        });
-        //return;
+        // Expected Slack API errors give us a message
+        if ((error as any).data) {
+          switch ((error as any).data.error) {
+            case 'channel_not_found':
+              await axios.post(origin.response_url, {
+                text: "Mermaid Preview can't automatically join private channels. If it's a private channel, please invite Mermaid bot to it.",
+              });
+              return; // Exit in this case
+            case 'method_not_supported_for_channel_type':
+              // Mermaid is already in the channel, so we can continue
+              break;
+            default:
+              await axios.post(origin.response_url, {
+                text: `Failed to join channel: \`${
+                  (error as Error).message || error
+                } \``,
+              });
+              return; // Exit in this case
+          }
+        } else {
+          await axios.post(origin.response_url, {
+            text: 'Failed to join channel: `' + (error as Error).message + '`',
+          });
+          return; // Exit in this case
+        }
       }
     }
 
