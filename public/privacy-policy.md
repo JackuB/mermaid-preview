@@ -1,6 +1,6 @@
 # Privacy Policy for "Mermaid for Slack"
 
-_Last Updated: September 8, 2023_
+_Last Updated: November 10, 2023_
 
 ## tl;dr
 
