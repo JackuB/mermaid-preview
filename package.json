@@ -5,7 +5,8 @@
   "description": "Create Mermaid diagrams and charts in Slack",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p .",
+    "build": "tsc -p . && npm run build:markdown",
+    "build:markdown": "marked -i public/privacy-policy.md -o public/privacy-policy.html && marked -i public/tos.md -o public/tos.html",
     "build:watch": "tsc -w -p .",
     "start": "npm run build && node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,7 +17,8 @@
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^10.4.0",
     "@slack/bolt": "^3.13.3",
-    "ioredis": "^5.3.2"
+    "ioredis": "^5.3.2",
+    "marked": "^9.1.6"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.8",
