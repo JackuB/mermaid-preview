@@ -225,13 +225,25 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
     }
   } catch (error) {
     logger.error(error);
-    // TODO: specific error messages for common errors
-    await axios.post(origin.response_url, {
-      text:
-        'Failed to generate mermaid diagram: `' +
-        (error as Error).message +
-        '`',
-    });
+    switch ((error as Error).name) {
+      case 'UnknownDiagramError': {
+        await axios.post(origin.response_url, {
+          text: `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${
+            (error as Error).message || ''
+          }\`\`\``,
+        });
+        break;
+      }
+      default: {
+        await axios.post(origin.response_url, {
+          text:
+            'Failed to generate mermaid diagram: `' +
+            (error as Error).message +
+            '`',
+        });
+        break;
+      }
+    }
   } finally {
     if (tempDir) {
       if (fs.existsSync(tempDir)) {
