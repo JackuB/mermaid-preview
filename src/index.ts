@@ -172,7 +172,7 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
       }
     }
 
-    renderMermaidToFile(inputPath, outputPath);
+    await renderMermaidToFile(inputPath, outputPath);
     logger.info('Saved mermaid preview to ' + outputPath);
 
     // uploadV2 is not returning a ts I need to thread the message
