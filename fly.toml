@@ -17,7 +17,6 @@ primary_region = "ams"
   method = "GET"
   timeout = "5s"
   path = "/"
-  protocol = "https"
 
 [http_service]
   internal_port = 3000
