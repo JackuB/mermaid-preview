@@ -36,14 +36,13 @@ FROM base
 # Install packages needed for deployment
 # Note: this installs the necessary libs to make the browser work with Puppeteer.
 # Install Google Chrome Stable and fonts
-RUN apt-get update && apt-get install gnupg wget -y && \
+RUN apt update && apt install gnupg wget -y && \
   wget --quiet --output-document=- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/google-archive.gpg && \
   sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
-  apt-get update && \
-  apt-get install google-chrome-stable -y --no-install-recommends \
-  font-noto-cjk font-noto-emoji \
-  terminus-font ttf-dejavu ttf-freefont ttf-font-awesome \
-  ttf-inconsolata ttf-linux-libertine && \
+  apt update && \
+  apt install google-chrome-stable -y --no-install-recommends && \
+  apt install fontconfig fonts-noto-color-emoji -y && \
+  fc-cache -fv && \
   rm -rf /var/lib/apt/lists/*
 
 # Copy built application
