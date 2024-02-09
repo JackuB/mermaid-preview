@@ -173,7 +173,9 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
       title: 'Mermaid diagram',
     });
 
-    if (channelToUpload.startsWith('D')) {
+    // If user runs /mermaid in self-DM, post a message to the Mermaid Preview channel!
+    // This is a weird interaction, but that's the Slack-way.
+    if (channelToUpload.startsWith('D') && origin.channel !== channelToUpload) {
       await axios.post(origin.response_url, {
         text: `Mermaid diagram uploaded to <#${channelToUpload}>:`,
       });
