@@ -45,6 +45,12 @@ RUN apt update && apt install gnupg wget -y && \
   fc-cache -fv && \
   rm -rf /var/lib/apt/lists/*
 
+RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
+RUN sh -c 'echo "deb http://http.us.debian.org/debian stable main contrib non-free" >> /etc/apt/sources.list.d/contrib.list' && \
+    apt update && apt install -y ttf-mscorefonts-installer
+RUN apt install -y fonts-font-awesome xfonts-terminus fonts-freefont-ttf fonts-takao
+RUN fc-cache -fv
+
 # Copy built application
 COPY --from=build /app /app
 
