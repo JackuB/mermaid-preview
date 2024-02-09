@@ -8,11 +8,11 @@ Mermaid charts or their PNG renderings are not stored on our servers. Only piece
 
 ## 1. Introduction
 
-Thank you for choosing Mermaid Preview, a Slack App designed to generate PNG previews of Mermaid.js charts. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our App. Please read this policy carefully and if you do not agree with its terms, please refrain from using our App.
+Thank you for choosing Mermaid Preview, a App for Slack designed to generate PNG previews of Mermaid.js charts. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our App. Please read this policy carefully and if you do not agree with its terms, please refrain from using our App.
 
 ## 2. Data We Collect
 
-Only data saved in a database are Slack App installation details, provided by Slack. This data is deleted when you uninstall the App from your workspace. We do not store any data that we don't need for our operations.
+Only data saved in a database are App for Slack installation details, provided by Slack. This data is deleted when you uninstall the App from your workspace. We do not store any data that we don't need for our operations.
 
 ## 3. How We Use Your Data
 
