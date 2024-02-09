@@ -108,7 +108,7 @@ app.view('mermaid-modal-submitted', async ({ ack, body, logger, client }) => {
       });
       return;
     }
-    const id = crypto.randomBytes(16).toString('hex');
+    const id = crypto.randomUUID();
     tempDir = dataDir + '/' + id;
     await fs.mkdirSync(tempDir);
     const inputPath = path.resolve(tempDir + '/input.mmd');
