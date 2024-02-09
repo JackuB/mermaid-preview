@@ -53,3 +53,8 @@ export async function renderMermaidToFile(
     }
   );
 }
+
+export const mermaidPreviewHintText =
+  ':bulb: Use a tool like <https://mermaid.live|Mermaid.live> to preview your Mermaid before posting';
+
+export const defaultMermaid = `graph LR\n  ...`;
