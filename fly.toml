@@ -8,6 +8,16 @@ primary_region = "ams"
 
 [build]
 
+[deploy]
+  strategy = "rolling"
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "12h"
+  method = "GET"
+  timeout = "5s"
+  path = "/"
+
 [http_service]
   internal_port = 3000
   force_https = true
@@ -15,3 +25,7 @@ primary_region = "ams"
   auto_start_machines = true
   min_machines_running = 0
   processes = ["app"]
+
+[[statics]]
+  guest_path = "/app/public"
+  url_prefix = "/public"
