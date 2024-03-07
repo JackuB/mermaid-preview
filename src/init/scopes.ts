@@ -1,7 +1,1 @@
-export default [
-  'channels:join',
-  'chat:write',
-  'commands',
-  'files:write',
-  'im:write',
-];
+export default ['channels:join', 'chat:write', 'commands', 'files:write'];

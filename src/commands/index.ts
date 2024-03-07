@@ -13,7 +13,7 @@ export default function initializeCommandListeners(app: App) {
           return await respond(
             `${
               body.text.trim() === 'help' ? '' : 'Unknown command\n\n'
-            }*Mermaid Preview* is a Slack app that allows you to generate previews Mermaid diagrams in Slack. See <http://mermaid-js.github.io/mermaid/#/|Mermaid documentation> for more information. Run \`/mermaid\` for an interactive dialog.\n\n${mermaidPreviewHintText}`
+            }*Mermaid Preview* is an app for Slack that allows you to generate previews Mermaid diagrams in Slack. See <http://mermaid-js.github.io/mermaid/#/|Mermaid documentation> for more information. Run \`/mermaid\` for an interactive dialog.\n\n${mermaidPreviewHintText}`
           );
         }
 
