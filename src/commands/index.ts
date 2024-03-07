@@ -46,7 +46,7 @@ export default function initializeCommandListeners(app: App) {
         if (body.channel_id.startsWith('D')) {
           logger.info('Direct message detected, exiting...');
           return await respond(
-            "Apologies, Mermaid Preview can't be used in direct messages, Slack bots can't reply directly to DMs with rendered previews. Please use it in a channel."
+            "Apologies, Mermaid Preview can't be used in direct messages, bots for Slack can't reply directly to DMs with rendered previews. Please use it in a channel."
           );
         }
 
