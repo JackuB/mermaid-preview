@@ -41,65 +41,41 @@ export default function initializeViews(app: App) {
       const inputPath = path.resolve(tempDir + '/input.mmd');
       const outputPath = path.resolve(tempDir + '/output.png');
       fs.writeFileSync(inputPath, inputMermaid);
-
       logger.info('saved mermaid to ' + inputPath);
-
-      // TODO: handle private channel - bot needs to be invited, or act in a limited functionality with response_url only
-      // TODO: handle DM - https://api.slack.com/methods/conversations.open could handle it, but it's a bit awkward
-      // TODO: handle group DM?
-      // Try joining the channel, if it fails, open a DM
 
       let channelToUpload: string = origin.channel;
 
-      // Check for direct message
-      if (origin.channel.startsWith('D')) {
-        logger.info('Direct message detected');
-        try {
-          const userChannel = await client.conversations.open({
-            users: origin.user_id,
-          });
-          channelToUpload = userChannel.channel?.id
-            ? userChannel.channel.id
-            : channelToUpload;
-          logger.info('User channel', userChannel);
-          logger.info('Channel selected', channelToUpload);
-        } catch (error) {
-          logger.error('Failed to open an user channel, but continuing', error);
-        }
-      } else {
-        try {
-          await client.conversations.join({
-            channel: origin.channel,
-          });
-        } catch (error) {
-          // Joining a private channel can be tricky...
-          logger.error('Failed to join channel, stopping', error);
-          // Expected Slack API errors give us a message
-          if ((error as any).data) {
-            switch ((error as any).data.error) {
-              case 'channel_not_found':
-                await axios.post(origin.response_url, {
-                  text: "Mermaid Preview can't automatically join private channels. If it's a private channel, please invite Mermaid bot to it.",
-                });
-                return; // Exit in this case
-              case 'method_not_supported_for_channel_type':
-                // Mermaid is already in the channel, so we can continue
-                break;
-              default:
-                await axios.post(origin.response_url, {
-                  text: `Failed to join channel: \`${
-                    (error as Error).message || error
-                  } \``,
-                });
-                return; // Exit in this case
-            }
-          } else {
-            await axios.post(origin.response_url, {
-              text:
-                'Failed to join channel: `' + (error as Error).message + '`',
-            });
-            return; // Exit in this case
+      try {
+        await client.conversations.join({
+          channel: origin.channel,
+        });
+      } catch (error) {
+        // Joining a private channel can be tricky...
+        logger.error('Failed to join channel, stopping', error);
+        // Expected Slack API errors give us a message
+        if ((error as any).data) {
+          switch ((error as any).data.error) {
+            case 'channel_not_found':
+              await axios.post(origin.response_url, {
+                text: "Mermaid Preview can't automatically join private channels. If it's a private channel, please invite Mermaid bot to it.",
+              });
+              return; // Exit in this case
+            case 'method_not_supported_for_channel_type':
+              // Mermaid is already in the channel, so we can continue
+              break;
+            default:
+              await axios.post(origin.response_url, {
+                text: `Failed to join channel: \`${
+                  (error as Error).message || error
+                } \``,
+              });
+              return; // Exit in this case
           }
+        } else {
+          await axios.post(origin.response_url, {
+            text: 'Failed to join channel: `' + (error as Error).message + '`',
+          });
+          return; // Exit in this case
         }
       }
 
@@ -124,17 +100,7 @@ export default function initializeViews(app: App) {
         initial_comment: `<@${origin.user_id}> created this Mermaid diagram:`,
         title: 'Mermaid diagram',
       });
-
-      // If user runs /mermaid in self-DM, post a message to the Mermaid Preview channel!
-      // This is a weird interaction, but that's the Slack-way.
-      if (
-        channelToUpload.startsWith('D') &&
-        origin.channel !== channelToUpload
-      ) {
-        await axios.post(origin.response_url, {
-          text: `Mermaid diagram uploaded to <#${channelToUpload}>:`,
-        });
-      }
+      logger.error('🚀 ~ app.view ~ diagramUpload:', diagramUpload);
 
       if (diagramUpload.file?.shares) {
         const shareKeys = Object.keys(diagramUpload.file.shares);
