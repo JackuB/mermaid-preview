@@ -14,8 +14,8 @@
   "author": "Jakub Mikulas",
   "license": "MIT",
   "dependencies": {
-    "@mermaid-js/mermaid-cli": "^10.4.0",
-    "@slack/bolt": "^3.13.3",
+    "@mermaid-js/mermaid-cli": "^10.9.1",
+    "@slack/bolt": "^3.18.0",
     "ioredis": "^5.4.1",
     "mermaid": "^10.9.1"
   },
