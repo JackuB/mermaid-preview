@@ -16,7 +16,7 @@
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^10.4.0",
     "@slack/bolt": "^3.13.3",
-    "ioredis": "^5.3.2",
+    "ioredis": "^5.4.1",
     "mermaid": "^10.7.0"
   },
   "devDependencies": {
