@@ -6,3 +6,6 @@ dist
 public/tos.html
 public/support.html
 public/privacy-policy.html
+
+# Sentry Config File
+.sentryclirc

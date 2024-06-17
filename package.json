@@ -8,7 +8,8 @@
     "build:markdown": "scripts/build-md-files.sh",
     "build:watch": "tsc -w -p .",
     "start": "npm run build && node dist/index.js",
-    "test": "vitest"
+    "test": "vitest",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org gak-0l --project mermaid-preview ./dist && sentry-cli sourcemaps upload --org gak-0l --project mermaid-preview ./dist"
   },
   "keywords": [],
   "author": "Jakub Mikulas",
@@ -22,6 +23,7 @@
     "mermaid": "^10.9.1"
   },
   "devDependencies": {
+    "@sentry/cli": "^2.32.1",
     "@types/node": "^20.14.0",
     "marked": "^13.0.0",
     "ts-node": "^10.9.1",
