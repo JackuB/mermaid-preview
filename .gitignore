@@ -3,3 +3,6 @@ data
 .DS_store
 dist
 .env
+public/tos.html
+public/support.html
+public/privacy-policy.html
