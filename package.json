@@ -16,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^10.9.1",
-    "@sentry/node": "^8.9.2",
+    "@sentry/node": "^8.15.0",
     "@sentry/profiling-node": "^8.9.2",
     "@slack/bolt": "^3.18.0",
     "ioredis": "^5.4.1",
