@@ -1,4 +1,4 @@
-FROM node:20.14-alpine3.20 as base
+FROM node:22-alpine3.20 as base
 LABEL fly_launch_runtime="Node.js"
 
 # Node.js app lives here
