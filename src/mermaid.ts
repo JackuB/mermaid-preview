@@ -51,7 +51,7 @@ export async function renderMermaidToFile(
         executablePath: process.env.CHROME_BIN
           ? process.env.CHROME_BIN
           : undefined,
-        args: ['--no-sandbox'], // I couldn't figure out how to run this in a container without this
+        args: ['--no-sandbox', '--disable-gpu'], // I couldn't figure out how to run this in a container without this
       },
     }
   );
