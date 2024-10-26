@@ -1,5 +1,5 @@
-import { type InstallationStore } from '@slack/bolt';
-import { getRedisClient } from '../redis';
+import { type InstallationStore } from "@slack/bolt";
+import { getRedisClient } from "../redis";
 
 export default async function () {
   const redis = await getRedisClient(0);
@@ -21,7 +21,7 @@ export default async function () {
         await redis.set(installation.team.id, installationString);
         return;
       }
-      throw new Error('Failed saving installation data to installationStore');
+      throw new Error("Failed saving installation data to installationStore");
     },
     fetchInstallation: async (installQuery) => {
       // Bolt will pass your handler an installQuery object
@@ -39,7 +39,7 @@ export default async function () {
         const res = await redis.get(installQuery.teamId);
         return res ? JSON.parse(res) : null;
       }
-      throw new Error('Failed fetching installation');
+      throw new Error("Failed fetching installation");
     },
     deleteInstallation: async (installQuery) => {
       // Bolt will pass your handler  an installQuery object
@@ -57,7 +57,7 @@ export default async function () {
         await redis.del(installQuery.teamId);
         return;
       }
-      throw new Error('Failed to delete installation');
+      throw new Error("Failed to delete installation");
     },
   };
   return installationStore;
