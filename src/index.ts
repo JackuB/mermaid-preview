@@ -1,8 +1,8 @@
-console.info('Mermaid Preview is starting...');
-import './instrument';
-import { getApp } from './init';
-import initializeViews from './views';
-import initializeCommandListeners from './commands';
+console.info("Mermaid Preview is starting...");
+import "./instrument";
+import { getApp } from "./init";
+import initializeViews from "./views";
+import initializeCommandListeners from "./commands";
 
 (async () => {
   const app = await getApp();
@@ -11,5 +11,5 @@ import initializeCommandListeners from './commands';
   initializeViews(app);
 
   await app.start();
-  console.info('Mermaid Preview is running!');
+  console.info("Mermaid Preview is running!");
 })();

@@ -1,1 +1,1 @@
-export default ['channels:join', 'chat:write', 'commands', 'files:write'];
+export default ["channels:join", "chat:write", "commands", "files:write"];

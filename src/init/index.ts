@@ -1,10 +1,10 @@
-import * as fs from 'fs';
-import { App, LogLevel } from '@slack/bolt';
+import * as fs from "fs";
+import { App, LogLevel } from "@slack/bolt";
 
-import installationStore from './installationStore';
-import customRoutes from './customRoutes';
-import scopes from './scopes';
-import { failedInstallationPageHTML } from './failedInstallationPage';
+import installationStore from "./installationStore";
+import customRoutes from "./customRoutes";
+import scopes from "./scopes";
+import { failedInstallationPageHTML } from "./failedInstallationPage";
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
@@ -22,7 +22,7 @@ async function getApp(): Promise<App> {
       directInstall: true,
       callbackOptions: {
         failure: (error, _installOptions, req, res) => {
-          console.log('Failed installation', error, _installOptions);
+          console.log("Failed installation", error, _installOptions);
           res.statusCode = 200;
           res.end(failedInstallationPageHTML);
         },
@@ -38,7 +38,7 @@ async function getApp(): Promise<App> {
   });
 }
 
-const dataDir = './data';
+const dataDir = "./data";
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir);
 }

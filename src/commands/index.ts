@@ -1,18 +1,18 @@
-import { App } from '@slack/bolt';
-import { defaultMermaid, mermaidPreviewHintText } from '../mermaid';
-import { PrivateDataObject } from '../types';
+import { App } from "@slack/bolt";
+import { defaultMermaid, mermaidPreviewHintText } from "../mermaid";
+import { PrivateDataObject } from "../types";
 
 export default function initializeCommandListeners(app: App) {
   app.command(
-    '/mermaid',
+    "/mermaid",
     async function ({ client, ack, body, logger, respond }) {
-      logger.info('mermaid command called', JSON.stringify(body, null, 2));
+      logger.info("mermaid command called", JSON.stringify(body, null, 2));
       try {
         await ack();
         if (body.text) {
           return await respond(
             `${
-              body.text.trim() === 'help' ? '' : 'Unknown command\n\n'
+              body.text.trim() === "help" ? "" : "Unknown command\n\n"
             }*Mermaid Preview* is an app for Slack that allows you to generate previews Mermaid diagrams in Slack. See <http://mermaid-js.github.io/mermaid/#/|Mermaid documentation> for more information. Run \`/mermaid\` for an interactive dialog.\n\n${mermaidPreviewHintText}`
           );
         }
@@ -43,8 +43,8 @@ export default function initializeCommandListeners(app: App) {
          *
          * For this reason, I need to stop the bot from responding to DMs.
          */
-        if (body.channel_id.startsWith('D')) {
-          logger.info('Direct message detected, exiting...');
+        if (body.channel_id.startsWith("D")) {
+          logger.info("Direct message detected, exiting...");
           return await respond(
             "Apologies, Mermaid Preview can't be used in direct messages, bots for Slack can't reply directly to DMs with rendered previews. Please use it in a channel."
           );
@@ -54,8 +54,8 @@ export default function initializeCommandListeners(app: App) {
         await client.views.open({
           trigger_id: body.trigger_id,
           view: {
-            type: 'modal',
-            callback_id: 'mermaid-modal-submitted',
+            type: "modal",
+            callback_id: "mermaid-modal-submitted",
             private_metadata: JSON.stringify({
               user_id: body.user_id,
               channel: body.channel_id,
@@ -63,39 +63,39 @@ export default function initializeCommandListeners(app: App) {
               invocation_id: invocationId,
             } as PrivateDataObject),
             title: {
-              type: 'plain_text',
-              text: 'Create a Mermaid diagram',
+              type: "plain_text",
+              text: "Create a Mermaid diagram",
             },
             blocks: [
               {
-                type: 'section',
+                type: "section",
                 text: {
-                  type: 'mrkdwn',
+                  type: "mrkdwn",
                   text: mermaidPreviewHintText,
                 },
               },
               {
-                type: 'input',
-                block_id: 'mermaid-form',
+                type: "input",
+                block_id: "mermaid-form",
                 element: {
-                  type: 'plain_text_input',
+                  type: "plain_text_input",
                   multiline: true,
                   focus_on_load: true,
-                  action_id: 'mermaid-input',
+                  action_id: "mermaid-input",
                   placeholder: {
-                    type: 'plain_text',
+                    type: "plain_text",
                     text: defaultMermaid,
                   },
                 },
                 label: {
-                  type: 'plain_text',
-                  text: 'Mermaid diagram',
+                  type: "plain_text",
+                  text: "Mermaid diagram",
                 },
               },
             ],
             submit: {
-              type: 'plain_text',
-              text: 'Submit',
+              type: "plain_text",
+              text: "Submit",
             },
           },
         });
