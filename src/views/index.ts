@@ -10,6 +10,7 @@ import {
   mermaidPreviewHintText,
   renderMermaidToFile,
 } from "../mermaid";
+import * as telemetry from "../telemetry";
 import { dataDir } from "../init";
 
 export default function initializeViews(app: App) {
@@ -91,6 +92,10 @@ export default function initializeViews(app: App) {
           "ms and saved it to " +
           outputPath
       );
+      telemetry.send("render", {
+        mermaidGenerationTimeMs,
+        mermaidLength: inputMermaid.length,
+      });
 
       // uploadV2 is not returning a ts I need to thread the message
       const diagramUpload = await client.files.upload({
