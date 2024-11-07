@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import { App, LogLevel } from "@slack/bolt";
 
-import installationStore from "./installationStore";
 import customRoutes from "./customRoutes";
 import scopes from "./scopes";
 import { failedInstallationPageHTML } from "./failedInstallationPage";
@@ -30,11 +29,10 @@ async function getApp(): Promise<App> {
     },
     scopes,
     customRoutes,
-    installationStore: await installationStore(),
     port,
     // Enable the following when using socket mode
-    // socketMode: true, // add this
-    // appToken: process.env.SLACK_APP_TOKEN, // add this
+    socketMode: true, // add this
+    appToken: process.env.SLACK_APP_TOKEN, // add this
   });
 }
 
