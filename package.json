@@ -21,7 +21,7 @@
     "@sentry/profiling-node": "^8.27.0",
     "@slack/bolt": "^3.21.4",
     "ioredis": "^5.4.1",
-    "mermaid": "^10.9.1"
+    "mermaid": "^11.4.1"
   },
   "devDependencies": {
     "@sentry/cli": "^2.34.1",
