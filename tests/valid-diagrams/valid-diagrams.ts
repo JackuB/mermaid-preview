@@ -174,4 +174,78 @@ export default [
     D --> C
     style m fill:#d6d,stroke:#333,stroke-width:4px`,
   },
+  {
+    type: 'flowchart',
+    input: `%%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
+graph TD
+
+    InputAppDB[(App DB)]:::file
+    OutputAppDB[(App DB)]:::file
+
+    DataWarehouse@{ shape: docs, label: "Data Warehouse"}
+    Datasources@{ shape: docs, label: "Datasources"}
+
+    TransactionCustomers@{ shape: doc, label: "Customers\nfrom\nTransactions"}
+    ChangedCustomers@{ shape: doc, label: "New or Changed\nCustomers"}
+
+    AlertResults@{ shape: docs, label: "Alert Step Results"}
+    CombinedAlerts@{ shape: doc, label: "Combined Alerts"}
+
+    StandardTransactions@{ shape: doc, label: "Standard Transactions"}
+
+    RuleProbabilities@{ shape: doc, label: "Rule Probabilities"}
+    AlertsWithProbabilities@{ shape: doc, label: "Alerts With\nProbabilities"}
+
+    CombinedMetrics@{ shape: doc, label: "Combined Metrics"}
+    MetricResults@{ shape: docs, label: "Metric Results"}
+    MonitorRunReport@{ shape: doc, label: "Monitor\nRun Report"}
+
+    classDef file fill:cornflowerblue;
+    class RuleProbabilities,DataWarehouse,Datasources,TransactionCustomers file;
+    class AlertsWithProbabilities,AlertResults,ChangedCustomers,CombinedAlerts,StandardTransactions file;
+    class CombinedMetrics,MetricResults,MonitorRunReport file;
+
+    InputAppDB --> SyncDataWarehouse --> DataWarehouse
+
+    Datasources --> DataFlow
+    DataWarehouse --> DataFlow
+
+    %% Customer management
+    DataFlow --> TransactionCustomers
+    TransactionCustomers --> DeltaCustomers
+    DataWarehouse --> DeltaCustomers
+    DeltaCustomers --> ChangedCustomers --> UpsertCustomers --> OutputAppDB
+
+    %% Alert management
+
+    DataFlow --> AlertResults --> CombineAlerts--> CombinedAlerts
+    DataFlow --> StandardTransactions
+
+    %% FPR
+    ModelPrediction[Model Prediction
+    Step Function]
+    StandardTransactions --> ModelPrediction
+    ModelPrediction-->RuleProbabilities
+
+    CombinedAlerts --> JoinProbabilities
+    RuleProbabilities --> JoinProbabilities
+    JoinProbabilities --> AlertsWithProbabilities
+
+    %% Insert Alerts
+    AlertsWithProbabilities --> InsertAlerts
+    UpsertCustomers -.-> InsertAlerts
+    InsertAlerts -->OutputAppDB
+
+    %% Metrics
+    DataFlow --> MetricResults
+    UpsertCustomers -.-> InsertMetrics
+    MetricResults --> CombineMetrics --> CombinedMetrics
+    CombinedMetrics --> InsertMetrics --> OutputAppDB
+
+    %% Reporting
+    CombinedMetrics --> GenerateReport
+    AlertsWithProbabilities --> GenerateReport
+    TransactionCustomers --> GenerateReport
+    GenerateReport --> MonitorRunReport`,
+  },
 ];

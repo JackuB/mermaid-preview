@@ -1,5 +1,5 @@
-const mermaid = import("mermaid");
-const mermaidCLIModule = import("@mermaid-js/mermaid-cli");
+const mermaid = import('mermaid');
+const mermaidCLIModule = import('@mermaid-js/mermaid-cli');
 
 export async function isMermaidInputValid(
   mermaidInput: string
@@ -19,12 +19,16 @@ export async function isMermaidInputValid(
       It is a specific case, so we are just going to log the error
       Validation works for other types
     */
-    if ((error as Error).message === "DOMPurify.addHook is not a function") {
+    if (
+      (error as Error).message === 'DOMPurify.addHook is not a function' ||
+      (error as Error).message === 'DOMPurify.sanitize is not a function'
+    ) {
       return true;
     } else {
-      console.error("Mermaid parsing error", error);
+      console.error('Mermaid parsing error', error);
     }
   }
+  console.log('🚀 ~ isMermaidInputValid:', mermaidInput, isMermaidInputValid);
   return !!isMermaidInputValid;
 }
 
@@ -39,7 +43,7 @@ export async function renderMermaidToFile(
     // @ts-ignore - ignoring a type for .png pattern in outputPath
     outputPath,
     {
-      outputFormat: "png",
+      outputFormat: 'png',
       parseMMDOptions: {
         viewport: {
           width: 2048,
@@ -47,18 +51,18 @@ export async function renderMermaidToFile(
         },
       },
       puppeteerConfig: {
-        headless: "new",
+        headless: 'new',
         executablePath: process.env.CHROME_BIN
           ? process.env.CHROME_BIN
           : undefined,
-        args: ["--no-sandbox", "--disable-gpu"], // I couldn't figure out how to run this in a container without this
+        args: ['--no-sandbox', '--disable-gpu'], // I couldn't figure out how to run this in a container without this
       },
     }
   );
 }
 
 export const mermaidPreviewHintText =
-  ":bulb: Use a tool like <https://mermaid.live|Mermaid.live> to preview your Mermaid before posting";
+  ':bulb: Use a tool like <https://mermaid.live|Mermaid.live> to preview your Mermaid before posting';
 
 export const defaultMermaid = `graph TD;
   A---B
