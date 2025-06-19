@@ -19,7 +19,7 @@
     "@mermaid-js/mermaid-cli": "^11.6.0",
     "@sentry/node": "^8.27.0",
     "@sentry/profiling-node": "^8.27.0",
-    "@slack/bolt": "^3.21.4",
+    "@slack/bolt": "^4.4.0",
     "ioredis": "^5.4.1",
     "mermaid": "^10.9.1"
   },
