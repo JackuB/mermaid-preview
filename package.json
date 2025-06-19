@@ -17,8 +17,8 @@
   "dependencies": {
     "@influxdata/influxdb3-client": "^1.1.0",
     "@mermaid-js/mermaid-cli": "^11.6.0",
-    "@sentry/node": "^8.27.0",
-    "@sentry/profiling-node": "^8.27.0",
+    "@sentry/node": "^9.30.0",
+    "@sentry/profiling-node": "^9.30.0",
     "@slack/bolt": "^4.4.0",
     "ioredis": "^5.4.1",
     "mermaid": "^10.9.1"
