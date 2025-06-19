@@ -15,7 +15,7 @@
   "author": "Jakub Mikulas",
   "license": "MIT",
   "dependencies": {
-    "@influxdata/influxdb3-client": "^0.12.0",
+    "@influxdata/influxdb3-client": "^1.1.0",
     "@mermaid-js/mermaid-cli": "^10.9.1",
     "@sentry/node": "^8.27.0",
     "@sentry/profiling-node": "^8.27.0",
