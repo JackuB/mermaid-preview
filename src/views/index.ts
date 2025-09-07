@@ -16,6 +16,7 @@ import { dataDir } from "../init";
 export default function initializeViews(app: App) {
   app.view("mermaid-modal-submitted", async ({ ack, body, logger, client }) => {
     let tempDir;
+    let beta = false;
     logger.info("mermaid modal submitted");
     const origin: PrivateDataObject = JSON.parse(body.view.private_metadata);
     try {
@@ -27,6 +28,10 @@ export default function initializeViews(app: App) {
           text: "Mermaid diagram can't be empty",
         });
         return;
+      }
+
+      if (inputMermaid.includes("MERMAID_BETA")) {
+        beta = true;
       }
 
       const validMermaid = await isMermaidInputValid(inputMermaid);
@@ -97,35 +102,80 @@ export default function initializeViews(app: App) {
         mermaidLength: inputMermaid.length,
       });
 
-      // uploadV2 is not returning a ts I need to thread the message
-      const diagramUpload = await client.files.upload({
-        channels: channelToUpload,
-        file: fs.createReadStream(outputPath),
-        filename: "mermaid.png",
-        initial_comment: `<@${origin.user_id}> created this Mermaid diagram:`,
-        title: "Mermaid diagram",
-      });
-      logger.error("🚀 ~ app.view ~ diagramUpload:", diagramUpload);
+      if (beta) {
+        logger.info("Beta uploader");
 
-      if (diagramUpload.file?.shares) {
-        const shareKeys = Object.keys(diagramUpload.file.shares);
-        for (const shareType of shareKeys) {
-          for (const shareChannel of Object.keys(
-            // @ts-ignore
-            diagramUpload.file.shares[shareType]
-          )) {
-            // @ts-ignore
-            for (const share of diagramUpload.file.shares[shareType][
-              shareChannel
-            ]) {
-              await client.files.upload({
-                channels: shareChannel,
-                content: inputMermaid,
-                initial_comment: "Mermaid document for the diagram above:",
-                thread_ts: share.ts,
-                filename: "mermaid.mmd",
-                filetype: "text",
-              });
+        const { upload_url, file_id, error } =
+          await client.files.getUploadURLExternal({
+            filename: "mermaid.png",
+            alt_text: "Mermaid diagram",
+            length: fs.statSync(outputPath).size,
+          });
+        if (error) {
+          logger.error(
+            `Slack API error from files.getUploadURLExternal: ${error}. See https://docs.slack.dev/reference/methods/files.getUploadURLExternal/#errors`
+          );
+          throw new Error(error);
+        }
+        if (!upload_url || !file_id) {
+          throw new Error("Upload to Slack API failed in a weird way...");
+        }
+        const uploadResponse = await axios.post(
+          upload_url,
+          fs.createReadStream(outputPath),
+          {
+            headers: {
+              "Content-Type": "image/png",
+            },
+          }
+        );
+        logger.info("Upload response status: " + uploadResponse.status);
+        if (uploadResponse.status !== 200) {
+          throw new Error("Failed to upload file to external URL");
+        }
+
+        const response = await client.files.completeUploadExternal({
+          channel_id: channelToUpload,
+          initial_comment: `<@${origin.user_id}> created this Mermaid diagram:`,
+          files: [
+            {
+              id: file_id,
+              title: "Mermaid diagram",
+            },
+          ],
+        });
+        logger.info("Complete upload response: " + JSON.stringify(response));
+      } else {
+        // uploadV2 is not returning a ts I need to thread the message
+        const diagramUpload = await client.files.upload({
+          channels: channelToUpload,
+          file: fs.createReadStream(outputPath),
+          filename: "mermaid.png",
+          initial_comment: `<@${origin.user_id}> created this Mermaid diagram:`,
+          title: "Mermaid diagram",
+        });
+        logger.error("🚀 ~ app.view ~ diagramUpload:", diagramUpload);
+
+        if (diagramUpload.file?.shares) {
+          const shareKeys = Object.keys(diagramUpload.file.shares);
+          for (const shareType of shareKeys) {
+            for (const shareChannel of Object.keys(
+              // @ts-ignore
+              diagramUpload.file.shares[shareType]
+            )) {
+              // @ts-ignore
+              for (const share of diagramUpload.file.shares[shareType][
+                shareChannel
+              ]) {
+                await client.files.upload({
+                  channels: shareChannel,
+                  content: inputMermaid,
+                  initial_comment: "Mermaid document for the diagram above:",
+                  thread_ts: share.ts,
+                  filename: "mermaid.mmd",
+                  filetype: "text",
+                });
+              }
             }
           }
         }
