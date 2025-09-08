@@ -16,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@influxdata/influxdb3-client": "^1.1.0",
-    "@mermaid-js/mermaid-cli": "^11.6.0",
+    "@mermaid-js/mermaid-cli": "^11.9.0",
     "@sentry/node": "^9.30.0",
     "@sentry/profiling-node": "^9.30.0",
     "@slack/bolt": "^4.4.0",
