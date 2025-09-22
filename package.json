@@ -20,7 +20,7 @@
     "@sentry/node": "^9.30.0",
     "@sentry/profiling-node": "^9.30.0",
     "@slack/bolt": "^4.4.0",
-    "ioredis": "^5.4.1",
+    "ioredis": "^5.7.0",
     "mermaid": "^11.10.1"
   },
   "devDependencies": {
