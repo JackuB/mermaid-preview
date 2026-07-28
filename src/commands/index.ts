@@ -1,6 +1,7 @@
 import { App } from "@slack/bolt";
-import { defaultMermaid, mermaidPreviewHintText } from "../mermaid";
+import { mermaidPreviewHintText } from "../mermaid";
 import { PrivateDataObject } from "../types";
+import { buildMermaidModalView } from "../modal";
 
 export default function initializeCommandListeners(app: App) {
   app.command(
@@ -53,51 +54,12 @@ export default function initializeCommandListeners(app: App) {
         const invocationId = 1;
         await client.views.open({
           trigger_id: body.trigger_id,
-          view: {
-            type: "modal",
-            callback_id: "mermaid-modal-submitted",
-            private_metadata: JSON.stringify({
-              user_id: body.user_id,
-              channel: body.channel_id,
-              response_url: body.response_url,
-              invocation_id: invocationId,
-            } as PrivateDataObject),
-            title: {
-              type: "plain_text",
-              text: "Create a Mermaid diagram",
-            },
-            blocks: [
-              {
-                type: "section",
-                text: {
-                  type: "mrkdwn",
-                  text: mermaidPreviewHintText,
-                },
-              },
-              {
-                type: "input",
-                block_id: "mermaid-form",
-                element: {
-                  type: "plain_text_input",
-                  multiline: true,
-                  focus_on_load: true,
-                  action_id: "mermaid-input",
-                  placeholder: {
-                    type: "plain_text",
-                    text: defaultMermaid,
-                  },
-                },
-                label: {
-                  type: "plain_text",
-                  text: "Mermaid diagram",
-                },
-              },
-            ],
-            submit: {
-              type: "plain_text",
-              text: "Submit",
-            },
-          },
+          view: buildMermaidModalView({
+            user_id: body.user_id,
+            channel: body.channel_id,
+            response_url: body.response_url,
+            invocation_id: invocationId,
+          } as PrivateDataObject),
         });
       } catch (error) {
         logger.error(error);

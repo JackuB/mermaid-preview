@@ -9,7 +9,10 @@ import { failedInstallationPageHTML } from "./failedInstallationPage";
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 async function getApp(): Promise<App> {
-  return new App({
+  console.info("getApp: fetching installation store...");
+  const store = await installationStore();
+  console.info("getApp: installation store ready, constructing App...");
+  const app = new App({
     logLevel: process.env.DEBUG ? LogLevel.DEBUG : LogLevel.INFO,
     signingSecret: process.env.SLACK_SIGNING_SECRET,
     clientId: process.env.SLACK_CLIENT_ID,
@@ -30,12 +33,14 @@ async function getApp(): Promise<App> {
     },
     scopes,
     customRoutes,
-    installationStore: await installationStore(),
+    installationStore: store,
     port,
     // Enable the following when using socket mode
     // socketMode: true, // add this
     // appToken: process.env.SLACK_APP_TOKEN, // add this
   });
+  console.info("getApp: App constructed");
+  return app;
 }
 
 const dataDir = "./data";

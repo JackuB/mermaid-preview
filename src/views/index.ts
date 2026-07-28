@@ -3,9 +3,11 @@ import * as path from "path";
 import * as crypto from "crypto";
 import axios from "axios";
 import { App } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
 
 import { PrivateDataObject } from "../types";
 import {
+  buildMermaidSourceReplyBlocks,
   isMermaidInputValid,
   mermaidPreviewHintText,
   renderMermaidToFile,
@@ -13,11 +15,54 @@ import {
 import * as telemetry from "../telemetry";
 import { dataDir } from "../init";
 
+// Attaches a rendered PNG to an existing message. Used both for editing an
+// already-posted diagram, and for the initial post, since chat.postMessage
+// reliably returns a `ts` up front, whereas filesUploadV2's own response
+// doesn't reliably tell us the ts of the message it just created.
+async function attachRenderedImage(
+  client: WebClient,
+  channel: string,
+  ts: string,
+  comment: string,
+  outputPath: string
+) {
+  const uploadResult = await client.filesUploadV2({
+    file: outputPath,
+    filename: "mermaid.png",
+  });
+  const fileId = uploadResult.files?.[0]?.files?.[0]?.id;
+  if (!fileId) {
+    throw new Error("Failed to get an id for the uploaded file");
+  }
+
+  await client.chat.update({
+    channel,
+    ts,
+    text: comment,
+    file_ids: [fileId],
+  });
+}
+
+function buildErrorText(error: Error): string {
+  // "Known" error from Mermaid CLI
+  if (error.message.startsWith("Evaluation failed: ")) {
+    const userFriendlyError = error.message
+      .replace(/    at .*$/gm, "") // remove stack trace
+      .replace(/^Evaluation failed: /, "")
+      .replace(/^\n$/gm, "");
+    return `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${userFriendlyError}\`\`\`${mermaidPreviewHintText}`;
+  }
+  return "Failed to generate mermaid diagram: ```" + error.message + "```";
+}
+
 export default function initializeViews(app: App) {
   app.view("mermaid-modal-submitted", async ({ ack, body, logger, client }) => {
     let tempDir;
     logger.info("mermaid modal submitted");
     const origin: PrivateDataObject = JSON.parse(body.view.private_metadata);
+    // Set once we've posted a "rendering..." placeholder, so failures can
+    // update that message instead of falling back to response_url.
+    let renderingMessage: { channel: string; ts: string } | undefined;
     try {
       await ack();
       const inputMermaid =
@@ -80,6 +125,28 @@ export default function initializeViews(app: App) {
         }
       }
 
+      const comment = `<@${origin.user_id}> created this Mermaid diagram:`;
+
+      // Show a placeholder right away, since rendering can take a while —
+      // update it in place once the diagram is ready (or on failure).
+      if (origin.edit) {
+        await client.chat.update({
+          channel: channelToUpload,
+          ts: origin.edit.parentTs,
+          text: "⏳ Re-rendering Mermaid diagram...",
+        });
+        renderingMessage = { channel: channelToUpload, ts: origin.edit.parentTs };
+      } else {
+        const posted = await client.chat.postMessage({
+          channel: channelToUpload,
+          text: "⏳ Rendering Mermaid diagram...",
+        });
+        if (!posted.ts) {
+          throw new Error("Failed to get ts for posted message");
+        }
+        renderingMessage = { channel: channelToUpload, ts: posted.ts };
+      }
+
       // measure time of this await
       const startTime = performance.now();
       await renderMermaidToFile(inputPath, outputPath);
@@ -97,35 +164,53 @@ export default function initializeViews(app: App) {
         mermaidLength: inputMermaid.length,
       });
 
-      // filesUploadV2 is the new method, since files.upload is deprecated
-      // but it doesn't return `share` information and without that we can't
-      // post a threaded reply with the content of the mermaid
-      await client.filesUploadV2({
-        channel_id: channelToUpload,
-        initial_comment: `<@${origin.user_id}> created this Mermaid diagram:`,
-        file: outputPath,
-        filename: "mermaid.png",
-      });
+      if (!renderingMessage) {
+        // Always set above, either from origin.edit or the new placeholder.
+        throw new Error("Missing rendering message to attach the image to");
+      }
+
+      // The placeholder/target message above already gave us a ts to
+      // attach the rendered image to.
+      await attachRenderedImage(
+        client,
+        renderingMessage.channel,
+        renderingMessage.ts,
+        comment,
+        outputPath
+      );
+
+      const sourceBlocks = buildMermaidSourceReplyBlocks(inputMermaid);
+      if (origin.edit) {
+        // Refresh the existing source reply, instead of posting a new one.
+        await client.chat.update({
+          channel: channelToUpload,
+          ts: origin.edit.messageTs,
+          text: "Mermaid diagram source",
+          blocks: sourceBlocks,
+        });
+      } else {
+        await client.chat.postMessage({
+          channel: renderingMessage.channel,
+          thread_ts: renderingMessage.ts,
+          text: "Mermaid diagram source",
+          blocks: sourceBlocks,
+        });
+      }
     } catch (error) {
       logger.error(error);
       logger.error("error.name", (error as Error).name);
       logger.error("error.message", (error as Error).message);
-      // "Known" error from Mermaid CLI
-      if ((error as Error).message.startsWith("Evaluation failed: ")) {
-        const userFriendlyError = (error as Error).message
-          .replace(/    at .*$/gm, "") // remove stack trace
-          .replace(/^Evaluation failed: /, "")
-          .replace(/^\n$/gm, "");
-        await axios.post(origin.response_url, {
-          text: `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${userFriendlyError}\`\`\`${mermaidPreviewHintText}`,
+      const errorText = buildErrorText(error as Error);
+      if (renderingMessage) {
+        // Leave whatever was already posted (e.g. the prior image, on a
+        // failed edit) alone, and just report the failure in its place.
+        await client.chat.update({
+          channel: renderingMessage.channel,
+          ts: renderingMessage.ts,
+          text: errorText,
         });
       } else {
-        await axios.post(origin.response_url, {
-          text:
-            "Failed to generate mermaid diagram: ```" +
-            (error as Error).message +
-            "```",
-        });
+        await axios.post(origin.response_url, { text: errorText });
       }
     } finally {
       if (tempDir) {

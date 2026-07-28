@@ -61,6 +61,68 @@ export async function renderMermaidToFile(
   );
 }
 
+const sourceBlockPattern = /```\n([\s\S]*)\n```/;
+
+export function formatMermaidSourceForSlack(mermaidSource: string): string {
+  const escaped = mermaidSource
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return `\`\`\`\n${escaped}\n\`\`\``;
+}
+
+export function extractMermaidSourceFromSlackText(
+  text: string
+): string | null {
+  const match = text.match(sourceBlockPattern);
+  if (!match) {
+    return null;
+  }
+  return match[1]
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+// Block Kit text objects are capped at 3000 characters, unlike a plain
+// message's 40000 character limit.
+const SLACK_TEXT_BLOCK_LIMIT = 3000;
+
+export function buildMermaidSourceReplyBlocks(mermaidSource: string) {
+  const formattedSource = formatMermaidSourceForSlack(mermaidSource);
+  if (formattedSource.length > SLACK_TEXT_BLOCK_LIMIT) {
+    return [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: ":warning: This diagram's source is too long to show here, so it can't be edited from this message. Run `/mermaid` again to create a new one.",
+        },
+      },
+    ];
+  }
+
+  return [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: formattedSource,
+      },
+    },
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          action_id: 'edit-mermaid-diagram',
+          text: { type: 'plain_text', text: '✏️ Edit diagram' },
+        },
+      ],
+    },
+  ];
+}
+
 export const mermaidPreviewHintText =
   ':bulb: Use a tool like <https://mermaid.live|Mermaid.live> to preview your Mermaid before posting';
 

@@ -14,7 +14,7 @@ The app listens for a `/mermaid` command and opens a Slack modal where you can e
 
 ## Wishlist
 
-- [ ] Edit already posted diagram (through Modal?)
+- [x] Edit already posted diagram (through Modal?)
 - [ ] Automatically detect Mermaid diagrams in messages and render them?
 - [ ] Live preview of the mermaid document in the modal? Seems like this can't be done with Slack's UI limitations.
 - [ ] Support DMs, [more context in the comment](https://github.com/JackuB/mermaid-preview/blob/ac9d7561d5bc8199425e189e6996817ee1e2ae82/src/commands/index.ts#L20-L45).
