@@ -1,4 +1,4 @@
-FROM node:22-alpine3.20 as base
+FROM node:24-alpine3.24 as base
 LABEL fly_launch_runtime="Node.js"
 
 # Node.js app lives here
@@ -17,10 +17,11 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
 COPY --link package-lock.json package.json ./
 RUN npm ci
 
-# Copy application code
-COPY --link . .
 # Our build script uses bash, we need to add it to alpine
 RUN apk add bash
+
+# Copy application code
+COPY --link . .
 RUN npm run build
 
 # Final stage for app image
