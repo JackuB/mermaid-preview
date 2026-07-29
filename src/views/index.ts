@@ -60,27 +60,39 @@ export default function initializeViews(app: App) {
     let tempDir;
     logger.info("mermaid modal submitted");
     const origin: PrivateDataObject = JSON.parse(body.view.private_metadata);
-    // Set once we've posted a "rendering..." placeholder, so failures can
-    // update that message instead of falling back to response_url.
-    let renderingMessage: { channel: string; ts: string } | undefined;
-    try {
-      await ack();
-      const inputMermaid =
-        body.view.state.values["mermaid-form"]["mermaid-input"].value;
-      if (!inputMermaid) {
-        await axios.post(origin.response_url, {
-          text: "Mermaid diagram can't be empty",
-        });
-        return;
-      }
+    const inputMermaid =
+      body.view.state.values["mermaid-form"]["mermaid-input"].value;
 
-      const validMermaid = await isMermaidInputValid(inputMermaid);
-      if (!validMermaid) {
-        await axios.post(origin.response_url, {
-          text: `Mermaid diagram is invalid.\n${mermaidPreviewHintText}`,
-        });
-        return;
-      }
+    // Validate before ack()-ing, so we can report problems inline in the
+    // modal (response_action: "errors") instead of closing it. This keeps
+    // the user's draft on screen and never touches the posted message.
+    if (!inputMermaid) {
+      await ack({
+        response_action: "errors",
+        errors: { "mermaid-form": "Mermaid diagram can't be empty" },
+      });
+      return;
+    }
+
+    const validMermaid = await isMermaidInputValid(inputMermaid);
+    if (!validMermaid) {
+      await ack({
+        response_action: "errors",
+        errors: {
+          "mermaid-form":
+            "Mermaid diagram is invalid. Try previewing it at https://mermaid.live first.",
+        },
+      });
+      return;
+    }
+
+    await ack();
+
+    // Set once we've posted a "rendering..." placeholder message (create
+    // flow only), so failures can update that placeholder instead of
+    // falling back to response_url.
+    let placeholderMessage: { channel: string; ts: string } | undefined;
+    try {
       const id = crypto.randomUUID();
       tempDir = dataDir + "/" + id;
       await fs.mkdirSync(tempDir);
@@ -127,15 +139,18 @@ export default function initializeViews(app: App) {
 
       const comment = `<@${origin.user_id}> created this Mermaid diagram:`;
 
-      // Show a placeholder right away, since rendering can take a while —
-      // update it in place once the diagram is ready (or on failure).
+      // Show a placeholder right away, since rendering can take a while.
+      // For edits, the existing message already has a good image on it —
+      // give feedback via an ephemeral instead of overwriting it, so a
+      // failed re-render doesn't clobber the last-good diagram.
+      let targetMessage: { channel: string; ts: string };
       if (origin.edit) {
-        await client.chat.update({
+        await client.chat.postEphemeral({
           channel: channelToUpload,
-          ts: origin.edit.parentTs,
+          user: origin.user_id,
           text: "⏳ Re-rendering Mermaid diagram...",
         });
-        renderingMessage = { channel: channelToUpload, ts: origin.edit.parentTs };
+        targetMessage = { channel: channelToUpload, ts: origin.edit.parentTs };
       } else {
         const posted = await client.chat.postMessage({
           channel: channelToUpload,
@@ -144,7 +159,8 @@ export default function initializeViews(app: App) {
         if (!posted.ts) {
           throw new Error("Failed to get ts for posted message");
         }
-        renderingMessage = { channel: channelToUpload, ts: posted.ts };
+        placeholderMessage = { channel: channelToUpload, ts: posted.ts };
+        targetMessage = placeholderMessage;
       }
 
       // measure time of this await
@@ -164,17 +180,12 @@ export default function initializeViews(app: App) {
         mermaidLength: inputMermaid.length,
       });
 
-      if (!renderingMessage) {
-        // Always set above, either from origin.edit or the new placeholder.
-        throw new Error("Missing rendering message to attach the image to");
-      }
-
       // The placeholder/target message above already gave us a ts to
       // attach the rendered image to.
       await attachRenderedImage(
         client,
-        renderingMessage.channel,
-        renderingMessage.ts,
+        targetMessage.channel,
+        targetMessage.ts,
         comment,
         outputPath
       );
@@ -190,8 +201,8 @@ export default function initializeViews(app: App) {
         });
       } else {
         await client.chat.postMessage({
-          channel: renderingMessage.channel,
-          thread_ts: renderingMessage.ts,
+          channel: targetMessage.channel,
+          thread_ts: targetMessage.ts,
           text: "Mermaid diagram source",
           blocks: sourceBlocks,
         });
@@ -201,12 +212,19 @@ export default function initializeViews(app: App) {
       logger.error("error.name", (error as Error).name);
       logger.error("error.message", (error as Error).message);
       const errorText = buildErrorText(error as Error);
-      if (renderingMessage) {
-        // Leave whatever was already posted (e.g. the prior image, on a
-        // failed edit) alone, and just report the failure in its place.
+      if (origin.edit) {
+        // Leave the existing message (image + source) untouched, and just
+        // tell the editing user what went wrong.
+        await client.chat.postEphemeral({
+          channel: origin.channel,
+          user: origin.user_id,
+          text: errorText,
+        });
+      } else if (placeholderMessage) {
+        // Nothing valuable on this message yet — safe to overwrite in place.
         await client.chat.update({
-          channel: renderingMessage.channel,
-          ts: renderingMessage.ts,
+          channel: placeholderMessage.channel,
+          ts: placeholderMessage.ts,
           text: errorText,
         });
       } else {
