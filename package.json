@@ -17,11 +17,11 @@
   "dependencies": {
     "@influxdata/influxdb3-client": "^1.1.0",
     "@mermaid-js/mermaid-cli": "^11.10.1",
-    "@sentry/node": "^9.30.0",
-    "@sentry/profiling-node": "^9.30.0",
+    "@sentry/node": "^10.69.0",
+    "@sentry/profiling-node": "^10.69.0",
     "@slack/bolt": "^4.4.0",
     "ioredis": "^5.8.2",
-    "mermaid": "^11.10.1"
+    "mermaid": "^11.16.0"
   },
   "devDependencies": {
     "@sentry/cli": "^2.34.1",
@@ -29,6 +29,6 @@
     "marked": "^16.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.6"
   }
 }
