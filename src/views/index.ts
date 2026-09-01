@@ -1,63 +1,19 @@
-import * as fs from "fs";
-import * as path from "path";
-import * as crypto from "crypto";
 import axios from "axios";
 import { App } from "@slack/bolt";
-import { WebClient } from "@slack/web-api";
 
 import { PrivateDataObject } from "../types";
 import {
   buildMermaidSourceReplyBlocks,
   isMermaidInputValid,
-  mermaidPreviewHintText,
-  renderMermaidToFile,
 } from "../mermaid";
-import * as telemetry from "../telemetry";
-import { dataDir } from "../init";
-
-// Attaches a rendered PNG to an existing message. Used both for editing an
-// already-posted diagram, and for the initial post, since chat.postMessage
-// reliably returns a `ts` up front, whereas filesUploadV2's own response
-// doesn't reliably tell us the ts of the message it just created.
-async function attachRenderedImage(
-  client: WebClient,
-  channel: string,
-  ts: string,
-  comment: string,
-  outputPath: string
-) {
-  const uploadResult = await client.filesUploadV2({
-    file: outputPath,
-    filename: "mermaid.png",
-  });
-  const fileId = uploadResult.files?.[0]?.files?.[0]?.id;
-  if (!fileId) {
-    throw new Error("Failed to get an id for the uploaded file");
-  }
-
-  await client.chat.update({
-    channel,
-    ts,
-    text: comment,
-    file_ids: [fileId],
-  });
-}
-
-function buildErrorText(error: Error): string {
-  // "Known" error from Mermaid CLI
-  if (error.message.startsWith("Evaluation failed: ")) {
-    const userFriendlyError = error.message
-      .replace(/    at .*$/gm, "") // remove stack trace
-      .replace(/^Evaluation failed: /, "")
-      .replace(/^\n$/gm, "");
-    return `Failed to generate mermaid diagram. Is your diagram valid?\n\n\`\`\`${userFriendlyError}\`\`\`${mermaidPreviewHintText}`;
-  }
-  return "Failed to generate mermaid diagram: ```" + error.message + "```";
-}
+import {
+  attachRenderedImage,
+  buildRenderErrorText,
+  renderMermaidToPng,
+} from "../rendering";
 
 export default function initializeViews(app: App) {
   app.view("mermaid-modal-submitted", async ({ ack, body, logger, client }) => {
-    let tempDir;
     logger.info("mermaid modal submitted");
     const origin: PrivateDataObject = JSON.parse(body.view.private_metadata);
     const inputMermaid =
@@ -93,14 +49,6 @@ export default function initializeViews(app: App) {
     // falling back to response_url.
     let placeholderMessage: { channel: string; ts: string } | undefined;
     try {
-      const id = crypto.randomUUID();
-      tempDir = dataDir + "/" + id;
-      await fs.mkdirSync(tempDir);
-      const inputPath = path.resolve(tempDir + "/input.mmd");
-      const outputPath = path.resolve(tempDir + "/output.png");
-      fs.writeFileSync(inputPath, inputMermaid);
-      logger.info("saved mermaid to " + inputPath);
-
       let channelToUpload: string = origin.channel;
 
       try {
@@ -163,22 +111,12 @@ export default function initializeViews(app: App) {
         targetMessage = placeholderMessage;
       }
 
-      // measure time of this await
-      const startTime = performance.now();
-      await renderMermaidToFile(inputPath, outputPath);
-      const endTime = performance.now();
-
-      const mermaidGenerationTimeMs = endTime - startTime;
-      logger.info(
-        "Created PNG in " +
-          mermaidGenerationTimeMs +
-          "ms and saved it to " +
-          outputPath
+      const { png, mermaidGenerationTimeMs } = await renderMermaidToPng(
+        inputMermaid
       );
-      telemetry.send("render", {
-        mermaidGenerationTimeMs,
-        mermaidLength: inputMermaid.length,
-      });
+      logger.info(
+        "Created PNG in " + mermaidGenerationTimeMs + "ms"
+      );
 
       // The placeholder/target message above already gave us a ts to
       // attach the rendered image to.
@@ -187,7 +125,7 @@ export default function initializeViews(app: App) {
         targetMessage.channel,
         targetMessage.ts,
         comment,
-        outputPath
+        png
       );
 
       const sourceBlocks = buildMermaidSourceReplyBlocks(inputMermaid);
@@ -211,7 +149,7 @@ export default function initializeViews(app: App) {
       logger.error(error);
       logger.error("error.name", (error as Error).name);
       logger.error("error.message", (error as Error).message);
-      const errorText = buildErrorText(error as Error);
+      const errorText = buildRenderErrorText(error as Error);
       if (origin.edit) {
         // Leave the existing message (image + source) untouched, and just
         // tell the editing user what went wrong.
@@ -229,12 +167,6 @@ export default function initializeViews(app: App) {
         });
       } else {
         await axios.post(origin.response_url, { text: errorText });
-      }
-    } finally {
-      if (tempDir) {
-        if (fs.existsSync(tempDir)) {
-          fs.rmSync(tempDir, { recursive: true });
-        }
       }
     }
   });

@@ -2,7 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { expect, describe, it } from 'vitest';
-import { isMermaidInputValid, renderMermaidToFile } from '../src/mermaid';
+import {
+  detectMermaidSourceInSlackMessage,
+  isMermaidInputValid,
+  renderMermaidToFile,
+} from '../src/mermaid';
 import validDiagrams from './valid-diagrams/valid-diagrams';
 
 describe('isMermaidInputValid', () => {
@@ -35,6 +39,54 @@ describe('isMermaidInputValid', () => {
     `;
     const result = await isMermaidInputValid(broken);
     expect(result).toBe(false);
+  });
+});
+
+describe('detectMermaidSourceInSlackMessage', () => {
+  it('detects a Mermaid Markdown code block surrounded by a message', async () => {
+    const source = `flowchart LR
+      A --> B`;
+    const result = await detectMermaidSourceInSlackMessage(
+      `Here is the flow:\n\n\`\`\`mermaid\n${source}\n\`\`\``
+    );
+
+    expect(result).toBe(source);
+  });
+
+  it('detects Mermaid in an ordinary Slack code block', async () => {
+    const source = `sequenceDiagram
+      Alice->>Bob: Hello`;
+    const result = await detectMermaidSourceInSlackMessage(
+      `\`\`\`\n${source}\n\`\`\``
+    );
+
+    expect(result).toBe(source);
+  });
+
+  it('decodes Slack entities in the detected source', async () => {
+    const result = await detectMermaidSourceInSlackMessage(
+      '```mermaid\nflowchart LR\nA[&lt;Start&gt;] --&gt; B[Done &amp; dusted]\n```'
+    );
+
+    expect(result).toBe(
+      'flowchart LR\nA[<Start>] --> B[Done & dusted]'
+    );
+  });
+
+  it('skips non-Mermaid code blocks', async () => {
+    const result = await detectMermaidSourceInSlackMessage(
+      'Some code:\n```\nconst answer = 42;\n```'
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('does not detect unfenced Mermaid source', async () => {
+    const result = await detectMermaidSourceInSlackMessage(
+      'flowchart LR\nA --> B'
+    );
+
+    expect(result).toBeNull();
   });
 });
 
