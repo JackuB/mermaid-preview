@@ -9,13 +9,19 @@ import {
 
 export default function initializeMessageListeners(app: App) {
   app.message(async ({ message, client, logger }) => {
+    const subtype = "subtype" in message ? message.subtype : undefined;
+    const userId =
+      "user" in message && typeof message.user === "string"
+        ? message.user
+        : undefined;
+    // Bolt's default ignoreSelf middleware filters this app's own bot ID.
+    const isBotMessage = subtype === "bot_message";
+
     if (
       !("text" in message) ||
       typeof message.text !== "string" ||
-      !("user" in message) ||
-      typeof message.user !== "string" ||
-      ("subtype" in message && message.subtype !== undefined) ||
-      ("bot_id" in message && message.bot_id !== undefined)
+      (subtype !== undefined && !isBotMessage) ||
+      (!isBotMessage && !userId)
     ) {
       return;
     }
@@ -52,7 +58,9 @@ export default function initializeMessageListeners(app: App) {
         client,
         message.channel,
         placeholderTs,
-        `<@${message.user}>'s Mermaid diagram:`,
+        userId
+          ? `<@${userId}>'s Mermaid diagram:`
+          : "Mermaid diagram shared by another app:",
         png,
       );
     } catch (error) {

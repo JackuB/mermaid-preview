@@ -90,14 +90,13 @@ describe("message listener", () => {
     );
   });
 
-  it("ignores bot messages", async () => {
+  it("renders Mermaid sent by another app", async () => {
     await listener({
       message: {
         type: "message",
         subtype: "bot_message",
         bot_id: "B123",
         channel: "C123",
-        user: "U123",
         ts: "bot-ts",
         text: "```mermaid\nflowchart LR\nA --> B\n```",
       },
@@ -105,7 +104,13 @@ describe("message listener", () => {
       logger: { info: vi.fn(), error: vi.fn() },
     });
 
-    expect(client.chat.postMessage).not.toHaveBeenCalled();
-    expect(rendering.renderMermaidToPng).not.toHaveBeenCalled();
+    expect(client.chat.postMessage).toHaveBeenCalledWith({
+      channel: "C123",
+      thread_ts: "bot-ts",
+      text: "Rendering Mermaid diagram...",
+    });
+    expect(rendering.renderMermaidToPng).toHaveBeenCalledWith(
+      "flowchart LR\nA --> B",
+    );
   });
 });
