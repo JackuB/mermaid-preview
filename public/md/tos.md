@@ -1,4 +1,4 @@
-_Last Updated: September 9, 2023_
+_Last Updated: September 1, 2026_
 
 ### 1. Introduction
 
@@ -14,7 +14,7 @@ You agree to use "Mermaid Preview" only for lawful purposes and in a way that do
 
 ### 4. User Data
 
-Our application does not read user's messages or data in Slack, beyond what's explicitly submitted by users when interacting with our application through the Slack command `/mermaid` or its UI. We respect user privacy and uphold a commitment to data protection.
+Our application receives messages from channels where it is a member to detect and render valid Mermaid source in code blocks. It does not store those messages or Mermaid source. Content explicitly submitted through the Slack command `/mermaid` or the App UI is likewise processed only to render the requested preview. We respect user privacy and uphold a commitment to data protection.
 
 ### 5. Limitation of Liability
 

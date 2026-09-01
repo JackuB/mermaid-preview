@@ -2,7 +2,8 @@ const mermaid = import('mermaid');
 const mermaidCLIModule = import('@mermaid-js/mermaid-cli');
 
 export async function isMermaidInputValid(
-  mermaidInput: string
+  mermaidInput: string,
+  options?: { logErrors?: boolean }
 ): Promise<boolean> {
   // Gotta love ESM...
   const mermaidInstance = (await mermaid) as any;
@@ -24,12 +25,41 @@ export async function isMermaidInputValid(
       (error as Error).message === 'DOMPurify.sanitize is not a function'
     ) {
       return true;
-    } else {
+    } else if (options?.logErrors !== false) {
       console.error('Mermaid parsing error', error);
     }
   }
-  console.log('🚀 ~ isMermaidInputValid:', mermaidInput, isMermaidInputValid);
   return !!isMermaidInputValid;
+}
+
+function decodeSlackText(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+export async function detectMermaidSourceInSlackMessage(
+  text: string
+): Promise<string | null> {
+  const codeBlockPattern = /```([\s\S]*?)```/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = codeBlockPattern.exec(text)) !== null) {
+    const source = decodeSlackText(match[1])
+      .trim()
+      .replace(/^mermaid[ \t]*\r?\n/i, '')
+      .trim();
+
+    if (
+      source &&
+      (await isMermaidInputValid(source, { logErrors: false }))
+    ) {
+      return source;
+    }
+  }
+
+  return null;
 }
 
 export async function renderMermaidToFile(
@@ -78,10 +108,7 @@ export function extractMermaidSourceFromSlackText(
   if (!match) {
     return null;
   }
-  return match[1]
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&');
+  return decodeSlackText(match[1]);
 }
 
 // Block Kit text objects are capped at 3000 characters, unlike a plain

@@ -4,6 +4,7 @@ import { getApp } from "./init";
 import initializeViews from "./views";
 import initializeCommandListeners from "./commands";
 import initializeActionListeners from "./actions";
+import initializeMessageListeners from "./events";
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled rejection during startup:", reason);
@@ -21,6 +22,7 @@ const startupWatchdog = setTimeout(() => {
   initializeCommandListeners(app);
   initializeViews(app);
   initializeActionListeners(app);
+  initializeMessageListeners(app);
   console.info("index: listeners registered, calling app.start()");
 
   await app.start();
