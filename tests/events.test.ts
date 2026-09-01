@@ -115,4 +115,48 @@ describe("message listener", () => {
       Buffer.from("png"),
     );
   });
+
+  it("renders Mermaid when another app updates its message", async () => {
+    const args = {
+      message: {
+        type: "message",
+        subtype: "message_changed",
+        hidden: true,
+        channel: "C123",
+        ts: "change-ts",
+        message: {
+          type: "message",
+          subtype: "bot_message",
+          bot_id: "B123",
+          channel: "C123",
+          ts: "bot-ts",
+          text: "```mermaid\nflowchart LR\nA --> B\n```",
+        },
+        previous_message: {
+          type: "message",
+          subtype: "bot_message",
+          bot_id: "B123",
+          channel: "C123",
+          ts: "bot-ts",
+          text: "Working...",
+        },
+      },
+      client,
+      logger: { info: vi.fn(), error: vi.fn() },
+    };
+
+    await listener(args);
+    await listener(args);
+
+    expect(rendering.renderMermaidToPng).toHaveBeenCalledWith(
+      "flowchart LR\nA --> B",
+    );
+    expect(rendering.uploadRenderedImageToThread).toHaveBeenCalledWith(
+      client,
+      "C123",
+      "bot-ts",
+      Buffer.from("png"),
+    );
+    expect(rendering.uploadRenderedImageToThread).toHaveBeenCalledTimes(1);
+  });
 });
