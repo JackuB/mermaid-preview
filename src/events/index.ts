@@ -2,9 +2,9 @@ import { App } from "@slack/bolt";
 
 import { detectMermaidSourceInSlackMessage } from "../mermaid";
 import {
-  attachRenderedImage,
   buildRenderErrorText,
   renderMermaidToPng,
+  uploadRenderedImageToThread,
 } from "../rendering";
 
 export default function initializeMessageListeners(app: App) {
@@ -35,43 +35,22 @@ export default function initializeMessageListeners(app: App) {
       "thread_ts" in message && message.thread_ts
         ? message.thread_ts
         : message.ts;
-    let placeholderTs: string | undefined;
 
     try {
-      const placeholder = await client.chat.postMessage({
-        channel: message.channel,
-        thread_ts: threadTs,
-        text: "Rendering Mermaid diagram...",
-      });
-      placeholderTs = placeholder.ts;
-      if (!placeholderTs) {
-        throw new Error("Failed to get ts for posted message");
-      }
-
       const { png, mermaidGenerationTimeMs } =
         await renderMermaidToPng(mermaidSource);
       logger.info(
         `Created automatically detected Mermaid PNG in ${mermaidGenerationTimeMs}ms`,
       );
 
-      await attachRenderedImage(
-        client,
-        message.channel,
-        placeholderTs,
-        userId
-          ? `<@${userId}>'s Mermaid diagram:`
-          : "Mermaid diagram shared by another app:",
-        png,
-      );
+      await uploadRenderedImageToThread(client, message.channel, threadTs, png);
     } catch (error) {
       logger.error("Failed to render Mermaid diagram from message", error);
-      if (placeholderTs) {
-        await client.chat.update({
-          channel: message.channel,
-          ts: placeholderTs,
-          text: buildRenderErrorText(error as Error),
-        });
-      }
+      await client.chat.postMessage({
+        channel: message.channel,
+        thread_ts: threadTs,
+        text: buildRenderErrorText(error as Error),
+      });
     }
   });
 }

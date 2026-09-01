@@ -61,6 +61,21 @@ export async function attachRenderedImage(
   });
 }
 
+export async function uploadRenderedImageToThread(
+  client: WebClient,
+  channel: string,
+  threadTs: string,
+  png: Buffer,
+) {
+  await client.filesUploadV2({
+    file: png,
+    filename: "mermaid.png",
+    alt_text: "Rendered Mermaid diagram",
+    channel_id: channel,
+    thread_ts: threadTs,
+  });
+}
+
 export function buildRenderErrorText(error: Error): string {
   if (error.message.startsWith("Evaluation failed: ")) {
     const userFriendlyError = error.message

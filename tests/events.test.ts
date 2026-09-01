@@ -7,6 +7,7 @@ const rendering = vi.hoisted(() => ({
     png: Buffer.from("png"),
     mermaidGenerationTimeMs: 10,
   })),
+  uploadRenderedImageToThread: vi.fn(),
 }));
 
 vi.mock("../src/rendering", () => rendering);
@@ -39,7 +40,7 @@ describe("message listener", () => {
     initializeMessageListeners(app as any);
   });
 
-  it("renders detected Mermaid as a thread reply", async () => {
+  it("renders detected Mermaid as an image-only thread reply", async () => {
     await listener({
       message: {
         type: "message",
@@ -53,21 +54,17 @@ describe("message listener", () => {
       logger: { info: vi.fn(), error: vi.fn() },
     });
 
-    expect(client.chat.postMessage).toHaveBeenCalledWith({
-      channel: "C123",
-      thread_ts: "source-ts",
-      text: "Rendering Mermaid diagram...",
-    });
+    expect(client.chat.postMessage).not.toHaveBeenCalled();
     expect(rendering.renderMermaidToPng).toHaveBeenCalledWith(
       "flowchart LR\nA --> B",
     );
-    expect(rendering.attachRenderedImage).toHaveBeenCalledWith(
+    expect(rendering.uploadRenderedImageToThread).toHaveBeenCalledWith(
       client,
       "C123",
-      "preview-ts",
-      "<@U123>'s Mermaid diagram:",
+      "source-ts",
       Buffer.from("png"),
     );
+    expect(rendering.attachRenderedImage).not.toHaveBeenCalled();
   });
 
   it("replies at the root of an existing thread", async () => {
@@ -85,8 +82,11 @@ describe("message listener", () => {
       logger: { info: vi.fn(), error: vi.fn() },
     });
 
-    expect(client.chat.postMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ thread_ts: "root-ts" }),
+    expect(rendering.uploadRenderedImageToThread).toHaveBeenCalledWith(
+      client,
+      "C123",
+      "root-ts",
+      Buffer.from("png"),
     );
   });
 
@@ -104,13 +104,15 @@ describe("message listener", () => {
       logger: { info: vi.fn(), error: vi.fn() },
     });
 
-    expect(client.chat.postMessage).toHaveBeenCalledWith({
-      channel: "C123",
-      thread_ts: "bot-ts",
-      text: "Rendering Mermaid diagram...",
-    });
+    expect(client.chat.postMessage).not.toHaveBeenCalled();
     expect(rendering.renderMermaidToPng).toHaveBeenCalledWith(
       "flowchart LR\nA --> B",
+    );
+    expect(rendering.uploadRenderedImageToThread).toHaveBeenCalledWith(
+      client,
+      "C123",
+      "bot-ts",
+      Buffer.from("png"),
     );
   });
 });
