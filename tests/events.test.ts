@@ -116,6 +116,41 @@ describe("message listener", () => {
     );
   });
 
+  it("uses an app message's formatted block text when fallback text is collapsed", async () => {
+    await listener({
+      message: {
+        type: "message",
+        user: "U123",
+        bot_id: "B123",
+        channel: "C123",
+        ts: "bot-ts",
+        thread_ts: "root-ts",
+        text: "``` flowchart LR A[Push code] --&gt; B[CI runs tests] B -- Pass --&gt; C[Deploy] ```",
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: "```\nflowchart LR\nA[Push code] --&gt; B[CI runs tests]\nB -- Pass --&gt; C[Deploy]\n```",
+            },
+          },
+        ],
+      },
+      client,
+      logger: { info: vi.fn(), error: vi.fn() },
+    });
+
+    expect(rendering.renderMermaidToPng).toHaveBeenCalledWith(
+      "flowchart LR\nA[Push code] --> B[CI runs tests]\nB -- Pass --> C[Deploy]",
+    );
+    expect(rendering.uploadRenderedImageToThread).toHaveBeenCalledWith(
+      client,
+      "C123",
+      "root-ts",
+      Buffer.from("png"),
+    );
+  });
+
   it("renders Mermaid when another app updates its message", async () => {
     const args = {
       message: {

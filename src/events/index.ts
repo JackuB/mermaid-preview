@@ -21,22 +21,49 @@ export default function initializeMessageListeners(app: App) {
       "user" in sourceMessage && typeof sourceMessage.user === "string"
         ? sourceMessage.user
         : undefined;
+    const botId =
+      "bot_id" in sourceMessage && typeof sourceMessage.bot_id === "string"
+        ? sourceMessage.bot_id
+        : undefined;
     // Bolt's default ignoreSelf middleware filters this app's own bot ID.
-    const isBotMessage = subtype === "bot_message";
+    const isAppMessage = subtype === "bot_message" || botId !== undefined;
+
+    const messageTexts: string[] = [];
+    if ("blocks" in sourceMessage && Array.isArray(sourceMessage.blocks)) {
+      for (const block of sourceMessage.blocks) {
+        const blockText =
+          "text" in block &&
+          typeof block.text === "object" &&
+          block.text !== null &&
+          "text" in block.text &&
+          typeof block.text.text === "string"
+            ? block.text.text
+            : undefined;
+        if (blockText) {
+          messageTexts.push(blockText);
+        }
+      }
+    }
+    if ("text" in sourceMessage && typeof sourceMessage.text === "string") {
+      messageTexts.push(sourceMessage.text);
+    }
 
     if (
-      !("text" in sourceMessage) ||
-      typeof sourceMessage.text !== "string" ||
-      (subtype !== undefined && !isBotMessage) ||
-      (isMessageChanged && !isBotMessage) ||
-      (!isBotMessage && !userId)
+      messageTexts.length === 0 ||
+      (subtype !== undefined && subtype !== "bot_message") ||
+      (isMessageChanged && !isAppMessage) ||
+      (!isAppMessage && !userId)
     ) {
       return;
     }
 
-    const mermaidSource = await detectMermaidSourceInSlackMessage(
-      sourceMessage.text,
-    );
+    let mermaidSource: string | null = null;
+    for (const messageText of messageTexts) {
+      mermaidSource = await detectMermaidSourceInSlackMessage(messageText);
+      if (mermaidSource) {
+        break;
+      }
+    }
     if (!mermaidSource) {
       return;
     }
