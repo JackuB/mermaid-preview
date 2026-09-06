@@ -11,6 +11,7 @@ import {
   isMermaidInputValid,
   mermaidPreviewHintText,
   renderMermaidToFile,
+  stripCodeFence,
 } from "../mermaid";
 import * as telemetry from "../telemetry";
 import { dataDir } from "../init";
@@ -60,8 +61,11 @@ export default function initializeViews(app: App) {
     let tempDir;
     logger.info("mermaid modal submitted");
     const origin: PrivateDataObject = JSON.parse(body.view.private_metadata);
-    const inputMermaid =
-      body.view.state.values["mermaid-form"]["mermaid-input"].value;
+    // Accept pastes wrapped in a Markdown code fence (any or no language
+    // tag) around the entire input.
+    const inputMermaid = stripCodeFence(
+      body.view.state.values["mermaid-form"]["mermaid-input"].value ?? ""
+    );
 
     // Validate before ack()-ing, so we can report problems inline in the
     // modal (response_action: "errors") instead of closing it. This keeps
