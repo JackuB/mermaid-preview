@@ -32,6 +32,20 @@ export async function isMermaidInputValid(
   return !!isMermaidInputValid;
 }
 
+// Matches a complete Markdown code fence (any or no language tag) around
+// the entire input, capturing the code body.
+const codeFencePattern =
+  /^\s*```[ \t]*(?:[a-zA-Z][a-zA-Z0-9_-]*[ \t]*)?\r?\n([\s\S]*?)\r?\n[ \t]*```\s*$/;
+
+export function stripCodeFence(input: string): string {
+  const match = codeFencePattern.exec(input);
+  // Normalize whichever body we end up with, so unfenced input gets the
+  // same line endings and trimming as a fenced paste.
+  return (match ? match[1] : input)
+    .replace(/\r\n/g, '\n')
+    .trim();
+}
+
 export async function renderMermaidToFile(
   inputPath: string,
   outputPath: string
