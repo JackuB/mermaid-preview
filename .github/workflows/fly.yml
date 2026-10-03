@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: fly-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy app
