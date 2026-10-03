@@ -13,7 +13,7 @@ FROM base as build
 
 # Install node modules
 # We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true"
+ENV PUPPETEER_SKIP_DOWNLOAD="true"
 COPY --link package-lock.json package.json ./
 RUN npm ci
 

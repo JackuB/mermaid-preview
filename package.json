@@ -20,7 +20,8 @@
     "@sentry/profiling-node": "^10.69.0",
     "@slack/bolt": "^4.4.0",
     "ioredis": "^5.8.2",
-    "mermaid": "^11.16.0"
+    "mermaid": "^11.16.0",
+    "puppeteer": "^23.11.1"
   },
   "devDependencies": {
     "@sentry/cli": "^2.34.1",

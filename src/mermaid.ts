@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import puppeteer, { type Browser } from 'puppeteer';
+
 const mermaid = import('mermaid');
 const mermaidCLIModule = import('@mermaid-js/mermaid-cli');
 
@@ -46,33 +49,66 @@ export function stripCodeFence(input: string): string {
     .trim();
 }
 
-export async function renderMermaidToFile(
-  inputPath: string,
-  outputPath: string
-): Promise<void> {
-  await (
-    await mermaidCLIModule
-  ).run(
-    inputPath,
-    // @ts-ignore - ignoring a type for .png pattern in outputPath
-    outputPath,
-    {
-      outputFormat: 'png',
-      parseMMDOptions: {
-        viewport: {
-          width: 2048,
-          height: 2048,
-        },
-      },
-      puppeteerConfig: {
-        headless: 'new',
+// A single Chromium instance is shared across renders, since launching one
+// per render was the bulk of the render time. Each render still gets its own
+// page (renderMermaid opens and closes it).
+let browserPromise: Promise<Browser> | undefined;
+
+export function getBrowser(): Promise<Browser> {
+  if (!browserPromise) {
+    const launching = puppeteer
+      .launch({
+        headless: true,
         executablePath: process.env.CHROME_BIN
           ? process.env.CHROME_BIN
           : undefined,
         args: ['--no-sandbox', '--disable-gpu'], // I couldn't figure out how to run this in a container without this
-      },
-    }
-  );
+      })
+      .then((browser) => {
+        // If Chromium crashes or gets killed, launch a fresh one next time.
+        browser.on('disconnected', () => {
+          console.warn('Chromium disconnected, will relaunch on next render');
+          if (browserPromise === launching) {
+            browserPromise = undefined;
+          }
+        });
+        console.info('Chromium launched');
+        return browser;
+      });
+    // Don't cache a failed launch, so the next render retries.
+    launching.catch(() => {
+      if (browserPromise === launching) {
+        browserPromise = undefined;
+      }
+    });
+    browserPromise = launching;
+  }
+  return browserPromise;
+}
+
+export async function closeBrowser(): Promise<void> {
+  const launching = browserPromise;
+  browserPromise = undefined;
+  if (launching) {
+    await (await launching).close();
+  }
+}
+
+export async function renderMermaidToFile(
+  inputPath: string,
+  outputPath: string
+): Promise<void> {
+  const definition = fs.readFileSync(inputPath, 'utf8');
+  const browser = await getBrowser();
+  const { data } = await (
+    await mermaidCLIModule
+  ).renderMermaid(browser, definition, 'png', {
+    viewport: {
+      width: 2048,
+      height: 2048,
+    },
+  });
+  fs.writeFileSync(outputPath, data);
 }
 
 const sourceBlockPattern = /```\n([\s\S]*)\n```/;

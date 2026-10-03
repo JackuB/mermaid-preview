@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { expect, describe, it } from 'vitest';
+import { expect, describe, it, afterAll } from 'vitest';
 import {
+  closeBrowser,
   isMermaidInputValid,
   renderMermaidToFile,
   stripCodeFence,
@@ -97,6 +98,10 @@ describe('stripCodeFence', () => {
 });
 
 describe('renderMermaidToFile', () => {
+  afterAll(async () => {
+    await closeBrowser();
+  });
+
   for (const diagramType of validDiagrams) {
     it(`creates a file for valid ${diagramType.type}`, async () => {
       const tmpDir = fs.mkdtempSync(

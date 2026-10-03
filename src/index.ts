@@ -4,6 +4,7 @@ import { getApp } from "./init";
 import initializeViews from "./views";
 import initializeCommandListeners from "./commands";
 import initializeActionListeners from "./actions";
+import { getBrowser } from "./mermaid";
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled rejection during startup:", reason);
@@ -26,6 +27,11 @@ const startupWatchdog = setTimeout(() => {
   await app.start();
   clearTimeout(startupWatchdog);
   console.info("Mermaid Preview is running!");
+
+  // Warm up Chromium so the first render doesn't pay for launching it.
+  getBrowser().catch((error) => {
+    console.error("Failed to launch Chromium at startup:", error);
+  });
 })().catch((error) => {
   console.error("Fatal error during startup:", error);
   process.exit(1);
