@@ -13,7 +13,6 @@ import {
   renderMermaidToFile,
   stripCodeFence,
 } from "../mermaid";
-import * as telemetry from "../telemetry";
 import { dataDir } from "../init";
 
 // Attaches a rendered PNG to an existing message. Used both for editing an
@@ -179,10 +178,6 @@ export default function initializeViews(app: App) {
           "ms and saved it to " +
           outputPath
       );
-      telemetry.send("render", {
-        mermaidGenerationTimeMs,
-        mermaidLength: inputMermaid.length,
-      });
 
       // The placeholder/target message above already gave us a ts to
       // attach the rendered image to.
