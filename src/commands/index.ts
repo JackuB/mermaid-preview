@@ -14,11 +14,12 @@ export default function initializeCommandListeners(app: App) {
       try {
         await ack();
         if (body.text) {
-          return await respond(
+          await respond(
             `${
               body.text.trim() === "help" ? "" : "Unknown command\n\n"
             }*Mermaid Preview* is an app for Slack that allows you to generate previews Mermaid diagrams in Slack. See <http://mermaid-js.github.io/mermaid/#/|Mermaid documentation> for more information. Run \`/mermaid\` for an interactive dialog.\n\n${mermaidPreviewHintText}`
           );
+          return;
         }
 
         /**
@@ -49,9 +50,10 @@ export default function initializeCommandListeners(app: App) {
          */
         if (body.channel_id.startsWith("D")) {
           logger.debug("Direct message detected, exiting...");
-          return await respond(
+          await respond(
             "Apologies, Mermaid Preview can't be used in direct messages, bots for Slack can't reply directly to DMs with rendered previews. Please use it in a channel."
           );
+          return;
         }
 
         const invocationId = 1;
@@ -66,7 +68,7 @@ export default function initializeCommandListeners(app: App) {
         });
       } catch (error) {
         logger.error(error);
-        return await respond(
+        await respond(
           `Failed to open Mermaid Preview dialog: \`${
             (error as Error).message
           }\``

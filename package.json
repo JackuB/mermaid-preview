@@ -9,6 +9,7 @@
     "build:watch": "tsc -w -p .",
     "start": "npm run build && node dist/index.js",
     "test": "vitest",
+    "typecheck": "tsc -p . --noEmit",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org gak-0l --project mermaid-preview ./dist && sentry-cli sourcemaps upload --org gak-0l --project mermaid-preview ./dist"
   },
   "keywords": [],

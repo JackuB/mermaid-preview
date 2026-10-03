@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
-import axios from "axios";
 import { App } from "@slack/bolt";
 import { WebClient } from "@slack/web-api";
 
@@ -41,6 +40,22 @@ async function attachRenderedImage(
     text: comment,
     file_ids: [fileId],
   });
+}
+
+// Sends a message only the submitting user can see, via the response_url
+// of the command or button that opened the modal.
+async function postToResponseUrl(
+  responseUrl: string,
+  message: { text: string }
+) {
+  const response = await fetch(responseUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(message),
+  });
+  if (!response.ok) {
+    throw new Error(`response_url request failed: ${response.status}`);
+  }
 }
 
 function buildErrorText(error: Error): string {
@@ -117,7 +132,7 @@ export default function initializeViews(app: App) {
           switch ((error as any).data.error) {
             case "channel_not_found":
               logger.debug("Can't join channel: channel_not_found");
-              await axios.post(origin.response_url, {
+              await postToResponseUrl(origin.response_url, {
                 text: "Mermaid Preview couldn't post to this channel. If you're trying to use it in a private channel, please invite the Mermaid bot there first (type /invite @Mermaid Preview), then try again.",
               });
               return; // Exit in this case
@@ -126,7 +141,7 @@ export default function initializeViews(app: App) {
               break;
             default:
               logger.error("Failed to join channel", error);
-              await axios.post(origin.response_url, {
+              await postToResponseUrl(origin.response_url, {
                 text: `Failed to join channel: \`${
                   (error as Error).message || error
                 } \``,
@@ -135,7 +150,7 @@ export default function initializeViews(app: App) {
           }
         } else {
           logger.error("Failed to join channel", error);
-          await axios.post(origin.response_url, {
+          await postToResponseUrl(origin.response_url, {
             text: "Failed to join channel: `" + (error as Error).message + "`",
           });
           return; // Exit in this case
@@ -229,7 +244,7 @@ export default function initializeViews(app: App) {
           text: errorText,
         });
       } else {
-        await axios.post(origin.response_url, { text: errorText });
+        await postToResponseUrl(origin.response_url, { text: errorText });
       }
     } finally {
       if (tempDir) {
