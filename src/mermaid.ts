@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import puppeteer, { type Browser } from 'puppeteer';
+import logger from './logger';
 
 const mermaid = import('mermaid');
 const mermaidCLIModule = import('@mermaid-js/mermaid-cli');
@@ -28,10 +29,9 @@ export async function isMermaidInputValid(
     ) {
       return true;
     } else {
-      console.error('Mermaid parsing error', error);
+      logger.debug('Mermaid parsing error:', (error as Error).message);
     }
   }
-  console.log('🚀 ~ isMermaidInputValid:', mermaidInput, isMermaidInputValid);
   return !!isMermaidInputValid;
 }
 
@@ -67,12 +67,12 @@ export function getBrowser(): Promise<Browser> {
       .then((browser) => {
         // If Chromium crashes or gets killed, launch a fresh one next time.
         browser.on('disconnected', () => {
-          console.warn('Chromium disconnected, will relaunch on next render');
+          logger.warn('Chromium disconnected, will relaunch on next render');
           if (browserPromise === launching) {
             browserPromise = undefined;
           }
         });
-        console.info('Chromium launched');
+        logger.info('Chromium launched');
         return browser;
       });
     // Don't cache a failed launch, so the next render retries.

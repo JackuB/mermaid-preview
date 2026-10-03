@@ -7,7 +7,10 @@ export default function initializeCommandListeners(app: App) {
   app.command(
     "/mermaid",
     async function ({ client, ack, body, logger, respond }) {
-      logger.info("mermaid command called", JSON.stringify(body, null, 2));
+      logger.debug(
+        "mermaid command called",
+        JSON.stringify({ team_id: body.team_id, channel_id: body.channel_id })
+      );
       try {
         await ack();
         if (body.text) {
@@ -45,7 +48,7 @@ export default function initializeCommandListeners(app: App) {
          * For this reason, I need to stop the bot from responding to DMs.
          */
         if (body.channel_id.startsWith("D")) {
-          logger.info("Direct message detected, exiting...");
+          logger.debug("Direct message detected, exiting...");
           return await respond(
             "Apologies, Mermaid Preview can't be used in direct messages, bots for Slack can't reply directly to DMs with rendered previews. Please use it in a channel."
           );

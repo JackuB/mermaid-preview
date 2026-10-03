@@ -58,7 +58,7 @@ function buildErrorText(error: Error): string {
 export default function initializeViews(app: App) {
   app.view("mermaid-modal-submitted", async ({ ack, body, logger, client }) => {
     let tempDir;
-    logger.info("mermaid modal submitted");
+    logger.debug("mermaid modal submitted");
     const origin: PrivateDataObject = JSON.parse(body.view.private_metadata);
     // Accept pastes wrapped in a Markdown code fence (any or no language
     // tag) around the entire input.
@@ -102,7 +102,7 @@ export default function initializeViews(app: App) {
       const inputPath = path.resolve(tempDir + "/input.mmd");
       const outputPath = path.resolve(tempDir + "/output.png");
       fs.writeFileSync(inputPath, inputMermaid);
-      logger.info("saved mermaid to " + inputPath);
+      logger.debug("saved mermaid to " + inputPath);
 
       let channelToUpload: string = origin.channel;
 
@@ -112,11 +112,11 @@ export default function initializeViews(app: App) {
         });
       } catch (error) {
         // Joining a private channel can be tricky...
-        logger.error("Failed to join channel, stopping", error);
         // Expected Slack API errors give us a message
         if ((error as any).data) {
           switch ((error as any).data.error) {
             case "channel_not_found":
+              logger.debug("Can't join channel: channel_not_found");
               await axios.post(origin.response_url, {
                 text: "Mermaid Preview couldn't post to this channel. If you're trying to use it in a private channel, please invite the Mermaid bot there first (type /invite @Mermaid Preview), then try again.",
               });
@@ -125,6 +125,7 @@ export default function initializeViews(app: App) {
               // Mermaid is already in the channel, so we can continue
               break;
             default:
+              logger.error("Failed to join channel", error);
               await axios.post(origin.response_url, {
                 text: `Failed to join channel: \`${
                   (error as Error).message || error
@@ -133,6 +134,7 @@ export default function initializeViews(app: App) {
               return; // Exit in this case
           }
         } else {
+          logger.error("Failed to join channel", error);
           await axios.post(origin.response_url, {
             text: "Failed to join channel: `" + (error as Error).message + "`",
           });
@@ -210,8 +212,6 @@ export default function initializeViews(app: App) {
       }
     } catch (error) {
       logger.error(error);
-      logger.error("error.name", (error as Error).name);
-      logger.error("error.message", (error as Error).message);
       const errorText = buildErrorText(error as Error);
       if (origin.edit) {
         // Leave the existing message (image + source) untouched, and just

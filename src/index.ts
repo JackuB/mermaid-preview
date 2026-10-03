@@ -5,6 +5,7 @@ import initializeViews from "./views";
 import initializeCommandListeners from "./commands";
 import initializeActionListeners from "./actions";
 import { getBrowser } from "./mermaid";
+import logger from "./logger";
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled rejection during startup:", reason);
@@ -15,14 +16,14 @@ const startupWatchdog = setTimeout(() => {
 }, 20000);
 
 (async () => {
-  console.info("index: calling getApp()");
+  logger.debug("index: calling getApp()");
   const app = await getApp();
-  console.info("index: getApp() resolved");
+  logger.debug("index: getApp() resolved");
 
   initializeCommandListeners(app);
   initializeViews(app);
   initializeActionListeners(app);
-  console.info("index: listeners registered, calling app.start()");
+  logger.debug("index: listeners registered, calling app.start()");
 
   await app.start();
   clearTimeout(startupWatchdog);

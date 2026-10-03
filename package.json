@@ -19,6 +19,7 @@
     "@sentry/node": "^10.69.0",
     "@sentry/profiling-node": "^10.69.0",
     "@slack/bolt": "^4.4.0",
+    "@slack/logger": "^4.0.0",
     "ioredis": "^5.8.2",
     "mermaid": "^11.16.0",
     "puppeteer": "^23.11.1"
