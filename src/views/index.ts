@@ -118,7 +118,7 @@ export default function initializeViews(app: App) {
           switch ((error as any).data.error) {
             case "channel_not_found":
               await axios.post(origin.response_url, {
-                text: "Mermaid Preview can't automatically join private channels. If it's a private channel, please invite Mermaid bot to it.",
+                text: "Mermaid Preview couldn't post to this channel. If you're trying to use it in a private channel, please invite the Mermaid bot there first (type /invite @Mermaid Preview), then try again.",
               });
               return; // Exit in this case
             case "method_not_supported_for_channel_type":
@@ -173,10 +173,12 @@ export default function initializeViews(app: App) {
 
       const mermaidGenerationTimeMs = endTime - startTime;
       logger.info(
-        "Created PNG in " +
-          mermaidGenerationTimeMs +
-          "ms and saved it to " +
-          outputPath
+        JSON.stringify({
+          event: "render",
+          mermaidGenerationTimeMs: Math.round(mermaidGenerationTimeMs),
+          mermaidLength: inputMermaid.length,
+          outputPath,
+        })
       );
 
       // The placeholder/target message above already gave us a ts to
