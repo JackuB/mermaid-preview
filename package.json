@@ -18,7 +18,7 @@
   "dependencies": {
     "@mermaid-js/mermaid-cli": "^11.10.1",
     "@sentry/node": "^10.69.0",
-    "@sentry/profiling-node": "^10.69.0",
+    "@sentry/profiling-node": "^11.4.0",
     "@slack/bolt": "^5.1.0",
     "@slack/logger": "^4.0.0",
     "ioredis": "^5.8.2",
