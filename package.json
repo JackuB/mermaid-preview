@@ -22,7 +22,7 @@
     "@slack/bolt": "^5.1.0",
     "@slack/logger": "^4.0.0",
     "ioredis": "^5.8.2",
-    "mermaid": "^12.0.0",
+    "mermaid": "^12.1.0",
     "puppeteer": "^23.11.1"
   },
   "devDependencies": {
