@@ -26,7 +26,7 @@
     "puppeteer": "^23.11.1"
   },
   "devDependencies": {
-    "@sentry/cli": "^2.34.1",
+    "@sentry/cli": "^3.8.0",
     "@types/node": "^26.1.2",
     "marked": "^16.2.1",
     "ts-node": "^10.9.2",
